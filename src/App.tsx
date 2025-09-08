@@ -541,9 +541,9 @@ const VisualizationPage: React.FC = () => {
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
             padding: 20px;
         }
@@ -623,7 +623,7 @@ const VisualizationPage: React.FC = () => {
                 <div class="stat-label">Lines</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${content.length}</div>
+                <div class="stat-number">${cont\ent.length}</div>
                 <div class="stat-label">Characters</div>
             </div>
         </div>
