@@ -196,6 +196,11 @@ const Header: React.FC = () => {
           src="/RocketHub Logo Alt 1.png" 
           alt="RocketHub Logo" 
           className="h-10 sm:h-14 w-auto flex-shrink-0"
+          onError={(e) => {
+            console.error('Logo failed to load:', e);
+            // Hide the image if it fails to load
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
         />
         <div className="flex-1 text-center">
           <h1 className="text-sm sm:text-xl font-bold text-white flex items-center justify-center space-x-2 sm:space-x-3">
