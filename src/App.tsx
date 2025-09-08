@@ -520,8 +520,6 @@ const VisualizationPage: React.FC = () => {
   const [visualizationHTML, setVisualizationHTML] = useState<string>('');
 
   const messageContent = location.state?.messageContent || '';
-  const messageId = location.state?.messageId || '';
-  const cacheVisualization = location.state?.cacheVisualization;
 
   useEffect(() => {
     if (!messageContent) {
@@ -538,7 +536,6 @@ const VisualizationPage: React.FC = () => {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Summary</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -634,37 +631,21 @@ const VisualizationPage: React.FC = () => {
 </html>`;
     };
 
-    // Generate fallback visualization
-    const generateFallbackVisualization = (content: string): string => {
-      return generateSimpleVisualization(content);
-    };
-
-    setTimeout(() => {
+    const generateVisualization = async () => {
       try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        
         if (apiKey && apiKey.trim() !== '') {
           // Try to use Gemini API
           console.log('Attempting to use Gemini API...');
           const prompt = generateQuickVisualizationPrompt(messageContent);
-          callGeminiAPI(prompt, apiKey).then(response => {
-            setVisualizationHTML(response);
-            
-            // Cache the AI-generated visualization
-            if (cacheVisualization && messageId) {
-              cacheVisualization(messageId, response);
-            }
-          }).catch(err => {
-            console.error('Gemini API failed:', err);
-            // Use fallback visualization
-            console.log('Using fallback visualization - API failed');
-            const fallbackHTML = generateFallbackVisualization(messageContent);
-            setVisualizationHTML(fallbackHTML);
-            
-            // Cache the fallback visualization
-            if (cacheVisualization && messageId) {
-              cacheVisualization(messageId, fallbackHTML);
-            }
-          });
+          const response = await callGeminiAPI(prompt, apiKey);
+          setVisualizationHTML(response);
+          
+          // Cache the AI-generated visualization
+          if (cacheVisualization && messageId) {
+            cacheVisualization(messageId, response);
+          }
         } else {
           // Use fallback visualization
           console.log('Using fallback visualization - no API key available');
@@ -676,8 +657,7 @@ const VisualizationPage: React.FC = () => {
             cacheVisualization(messageId, fallbackHTML);
           }
         }
-      } catch (err) {
-        console.error('Error in visualization generation:', err);
+      } catch (error) {
         // If API fails, fall back to static visualization
         console.log('API failed, using fallback visualization');
         const fallbackHTML = generateFallbackVisualization(messageContent);
@@ -688,9 +668,14 @@ const VisualizationPage: React.FC = () => {
           cacheVisualization(messageId, fallbackHTML);
         }
       }
+    };
+
+    setTimeout(() => {
+      const html = generateSimpleVisualization(messageContent);
+      setVisualizationHTML(html);
       setIsLoading(false);
     }, 1000);
-  }, [messageContent, navigate, messageId, cacheVisualization]);
+  }, [messageContent, navigate]);
 
   const handleBack = () => {
     navigate('/');
