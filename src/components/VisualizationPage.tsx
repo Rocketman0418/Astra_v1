@@ -260,7 +260,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <img 
-            src="https://astracompanyagent.netlify.app/RocketHub%20Logo%20Alt%201.png" 
+            src="/RocketHub Logo Alt 1.png" 
             alt="RocketHub Logo" 
             className="h-10 sm:h-14 w-auto flex-shrink-0"
           />
