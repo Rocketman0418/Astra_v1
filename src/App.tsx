@@ -623,7 +623,7 @@ const VisualizationPage: React.FC = () => {
                 <div class="stat-label">Lines</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">${cont\ent.length}</div>
+                <div class="stat-number">${content.length}</div>
                 <div class="stat-label">Characters</div>
             </div>
         </div>
