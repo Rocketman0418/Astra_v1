@@ -232,84 +232,94 @@ export const generateFallbackVisualization = (content: string): string => {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            font-size: 16px;
+            line-height: 1.6;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 30px 0;
+            margin-bottom: 20px;
+            padding: 20px 0;
             border-bottom: 2px solid #FF4500;
         }
         
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
             background: linear-gradient(45deg, #FF4500, #FF6B35);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
         
         .content-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 20px;
+            margin-bottom: 20px;
             border: 1px solid rgba(255, 69, 0, 0.3);
             backdrop-filter: blur(10px);
         }
         
         .content-text {
-            line-height: 1.8;
-            font-size: 1.1rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
             white-space: pre-wrap;
             word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
         }
         
         .api-notice {
             background: linear-gradient(45deg, #4CAF50, #45a049);
             border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
+            padding: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
         
         .api-notice h3 {
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
         }
         
         .api-notice p {
             opacity: 0.9;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
         }
         
         .insights-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
         }
         
         .insight-card {
             background: rgba(76, 175, 80, 0.1);
             border: 1px solid #4CAF50;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
         }
         
         .insight-title {
             color: #4CAF50;
             font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-size: 1rem;
         }
         
         .insight-list {
@@ -318,8 +328,9 @@ export const generateFallbackVisualization = (content: string): string => {
         }
         
         .insight-list li {
-            padding: 5px 0;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
         }
         
         .insight-list li:last-child {
@@ -328,42 +339,109 @@ export const generateFallbackVisualization = (content: string): string => {
         
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
         }
         
         .stat-card {
             background: rgba(255, 69, 0, 0.1);
             border: 1px solid #FF4500;
             border-radius: 10px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
         }
         
         .stat-number {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #FF4500;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.8;
         }
         
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 18px;
+            }
+            
             .header h1 {
-                font-size: 2rem;
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+            
+            .header p {
+                font-size: 1rem;
             }
             
             .content-card {
+                padding: 30px;
+                margin-bottom: 30px;
+            }
+            
+            .content-text {
+                font-size: 1.1rem;
+                line-height: 1.8;
+                max-height: none;
+            }
+            
+            .api-notice {
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+            
+            .api-notice h3 {
+                font-size: 1.3rem;
+                margin-bottom: 10px;
+            }
+            
+            .api-notice p {
+                font-size: 0.95rem;
+                margin-bottom: 15px;
+            }
+            
+            .insights-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            }
+            
+            .insight-card {
                 padding: 20px;
             }
             
+            .insight-title {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+            
+            .insight-list li {
+                padding: 5px 0;
+                font-size: 1rem;
+            }
+            
             .stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+                margin-bottom: 5px;
+            }
+            
+            .stat-label {
+                font-size: 0.9rem;
             }
         }
     </style>

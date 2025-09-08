@@ -257,33 +257,34 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
       {/* Header - Same as chat page */}
-      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
-        <div className="flex items-center space-x-2 sm:space-x-3">
+      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-2 sm:px-6 py-2 sm:py-4 sticky top-0 z-50">
+        <div className="flex items-center justify-between w-full">
           <img 
             src="/rockethub-logo.png"
             alt="RocketHub Logo" 
-            className="h-10 sm:h-14 w-auto flex-shrink-0"
+            className="h-8 sm:h-12 w-auto flex-shrink-0"
             onError={(e) => {
               console.error('Logo failed to load:', e);
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <div className="flex-1 text-center">
-            <h1 className="text-sm sm:text-xl font-bold text-white flex items-center justify-center space-x-2 sm:space-x-3">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-sm sm:text-lg">🚀</span>
+          <div className="flex-1 flex items-center justify-center px-2">
+            <h1 className="text-xs sm:text-xl font-bold text-white flex items-center space-x-1 sm:space-x-3">
+              <div className="w-5 h-5 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-xs sm:text-lg">🚀</span>
               </div>
-              <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-wide truncate">
-                Astra: Company Intelligence Agent
+              <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-tight truncate max-w-[200px] sm:max-w-none">
+                <span className="hidden sm:inline">Astra: Company Intelligence Agent</span>
+                <span className="sm:hidden">Astra AI</span>
               </span>
             </h1>
           </div>
-          <div className="w-10 sm:w-14 flex justify-end flex-shrink-0">
+          <div className="flex justify-end flex-shrink-0">
             <button
               onClick={handleBack}
-              className="flex items-center space-x-1 sm:space-x-2 text-gray-300 hover:text-white transition-colors px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-700 text-sm"
+              className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-gray-700 text-sm"
             >
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back</span>
             </button>
           </div>
@@ -300,7 +301,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
             sandbox="allow-scripts allow-same-origin"
             style={{ 
               minHeight: '100%',
-              height: 'calc(100vh - 70px)',
+              height: 'calc(100vh - 60px)',
               display: 'block'
             }}
             onLoad={(e) => {
@@ -318,12 +319,12 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <div className="text-center px-4">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-xl sm:text-2xl">⚠️</span>
+            <div className="text-center px-4 py-8">
+              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">⚠️</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-2">No Visualization Content</h2>
-              <p className="text-sm sm:text-base text-gray-400">The AI did not generate any visualization content.</p>
+              <h2 className="text-xl font-bold text-white mb-2">No Visualization Content</h2>
+              <p className="text-base text-gray-400">The AI did not generate any visualization content.</p>
             </div>
           </div>
         )}

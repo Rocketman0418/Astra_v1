@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevent zoom on input focus for iOS */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  font-size: 16px;
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
@@ -36,4 +51,23 @@ button:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #FF4500;
   outline-offset: 2px;
+}
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll */
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  /* Better touch targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve text readability */
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 }

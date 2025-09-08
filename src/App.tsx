@@ -190,29 +190,30 @@ const useChat = () => {
 // Header Component
 const Header: React.FC = () => {
   return (
-    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
-      <div className="flex items-center space-x-2 sm:space-x-3">
+    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-2 sm:px-6 py-2 sm:py-4 sticky top-0 z-50">
+      <div className="flex items-center justify-between w-full">
         <img 
           src="/rockethub-logo.png" 
           alt="RocketHub Logo" 
-          className="h-10 sm:h-14 w-auto flex-shrink-0"
+          className="h-8 sm:h-12 w-auto flex-shrink-0"
           onError={(e) => {
             console.error('Logo failed to load:', e);
             // Hide the image if it fails to load
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <div className="flex-1 text-center">
-          <h1 className="text-sm sm:text-xl font-bold text-white flex items-center justify-center space-x-2 sm:space-x-3">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-sm sm:text-lg">🚀</span>
+        <div className="flex-1 flex items-center justify-center px-2">
+          <h1 className="text-xs sm:text-xl font-bold text-white flex items-center space-x-1 sm:space-x-3">
+            <div className="w-5 h-5 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xs sm:text-lg">🚀</span>
             </div>
-            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-wide truncate">
-              Astra: Company Intelligence Agent
+            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-tight truncate max-w-[200px] sm:max-w-none">
+              <span className="hidden sm:inline">Astra: Company Intelligence Agent</span>
+              <span className="sm:hidden">Astra AI</span>
             </span>
           </h1>
         </div>
-        <div className="w-10 sm:w-14 flex-shrink-0"></div>
+        <div className="w-8 sm:w-12 flex-shrink-0"></div>
       </div>
     </header>
   );
@@ -317,7 +318,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const displayMessage = displayLines.join('\n');
 
   return (
-    <div className={`flex items-start space-x-2 sm:space-x-3 mb-4 sm:mb-6 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div className={`flex items-start space-x-2 sm:space-x-3 mb-3 sm:mb-6 px-1 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
         isUser ? 'bg-blue-600' : 'bg-[#FF4500]'
       }`}>
@@ -332,7 +333,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         <div className={`rounded-2xl px-4 py-3 ${
           isUser ? 'bg-blue-600 text-white' : 'bg-[#FF4500] text-white'
         }`}>
-          <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+          <div className="text-base sm:text-base leading-relaxed whitespace-pre-wrap break-words">
             {displayMessage.split('\n').map((line, index, array) => {
               const formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
               
@@ -346,19 +347,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
           
           {shouldTruncate && (
-            <div className="mt-2 sm:mt-3 pt-2 border-t border-white/20">
+            <div className="mt-3 pt-2 border-t border-white/20">
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center space-x-1 sm:space-x-2 text-white/80 hover:text-white transition-colors text-sm"
+                className="flex items-center space-x-2 text-white/80 hover:text-white transition-colors text-sm"
               >
                 {isExpanded ? (
                   <>
-                    <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <ChevronUp className="w-4 h-4" />
                     <span>Show Less</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <ChevronDown className="w-4 h-4" />
                     <span>Show More</span>
                   </>
                 )}
@@ -367,18 +368,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
           
           {!isUser && !isInitialResponse && (
-            <div className={`mt-2 sm:mt-3 pt-2 ${shouldTruncate ? '' : 'border-t border-white/20'}`}>
+            <div className={`mt-3 pt-2 ${shouldTruncate ? '' : 'border-t border-white/20'}`}>
               <button
                 onClick={() => openVisualization('quick')}
-                className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm w-full sm:w-auto justify-center"
+                className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium px-4 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm w-full justify-center"
               >
-                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                <BarChart3 className="w-4 h-4" />
                 <span>{hasVisualization ? 'View Visualization' : 'Create Visualization'}</span>
               </button>
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-1 px-1 sm:px-2">
+        <p className="text-xs text-gray-400 mt-2 px-2">
           {formatTime(timestamp)}
         </p>
       </div>
@@ -415,15 +416,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, isLoading]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] px-3 sm:px-6 py-4 sm:py-6">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] px-2 sm:px-6 py-3 sm:py-6">
       <div className="max-w-4xl mx-auto">
         {messages.length === 0 && (
-          <div className="text-center py-8 sm:py-12 px-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#FF4500] rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl sm:text-2xl">🚀</span>
+          <div className="text-center py-6 sm:py-12 px-2 sm:px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#FF4500] rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <span className="text-2xl sm:text-3xl">🚀</span>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">Welcome to Astra AI</h2>
-            <p className="text-sm sm:text-base text-gray-400">RocketHub's Company Intelligence Agent</p>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2 sm:mb-3">Welcome to Astra AI</h2>
+            <p className="text-base sm:text-lg text-gray-400 px-4">RocketHub's Company Intelligence Agent</p>
           </div>
         )}
         
@@ -475,16 +476,16 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
   };
 
   return (
-    <div className="border-t border-gray-700 bg-[#1a1a2e] px-3 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50">
+    <div className="border-t border-gray-700 bg-[#1a1a2e] px-2 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50 safe-area-inset-bottom">
       {error && (
-        <div className="mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-3 sm:px-4 py-2 space-y-2 sm:space-y-0">
+        <div className="mb-3 flex flex-col items-start justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-3 space-y-2">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 text-red-400" />
-            <span className="text-red-400 text-sm">{error}</span>
+            <span className="text-red-400 text-sm leading-relaxed">{error}</span>
           </div>
           <button
             onClick={onRetry}
-            className="flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors"
+            className="flex items-center space-x-2 text-red-400 hover:text-red-300 transition-colors bg-red-900/30 px-3 py-2 rounded-lg"
           >
             <RotateCcw className="w-4 h-4" />
             <span className="text-sm">Retry</span>
@@ -492,7 +493,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         </div>
       )}
       
-      <div className="flex items-end space-x-2 sm:space-x-3">
+      <div className="flex items-end space-x-3">
         <div className="flex-1 relative">
           <textarea
             value={message}
@@ -500,18 +501,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
             onKeyPress={handleKeyPress}
             placeholder="Type your message to Astra..."
             disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-3 sm:px-4 py-3 pr-12 text-sm sm:text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-4 py-4 text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] max-h-[120px]"
             rows={1}
-            style={{ minHeight: '44px', maxHeight: '100px' }}
           />
         </div>
         
         <button
           onClick={handleSend}
           disabled={!message.trim() || isLoading}
-          className="w-10 h-10 sm:w-12 sm:h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
+          className="w-12 h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
         >
-          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Send className="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -525,7 +525,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col pb-16 sm:pb-20">
+        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
           <Header />
           <ChatContainer 
             messages={messages} 
