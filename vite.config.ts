@@ -21,8 +21,9 @@ export default defineConfig(({ mode }) => {
   return {
   base: '/',
   define: {
-    // Explicitly define environment variables for better compatibility
-    __VITE_GEMINI_API_KEY__: JSON.stringify(env.VITE_GEMINI_API_KEY || ''),
+    // Explicitly define environment variables for production builds
+    'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || ''),
+    'process.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || ''),
   },
   plugins: [
     react(),
