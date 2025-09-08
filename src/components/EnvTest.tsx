@@ -1,7 +1,10 @@
 import React from 'react';
 
 const EnvTest: React.FC = () => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 
+                (window as any).__VITE_GEMINI_API_KEY__ || 
+                (process as any).env?.VITE_GEMINI_API_KEY ||
+                'FALLBACK_USED';
   
   return (
     <div style={{ 
@@ -22,6 +25,12 @@ const EnvTest: React.FC = () => {
       <div>Dev: {import.meta.env.DEV ? 'true' : 'false'}</div>
       <div>API Key: {apiKey ? `${apiKey.substring(0, 10)}...` : 'NOT FOUND'}</div>
       <div>API Key Length: {apiKey?.length || 0}</div>
+      <div>API Key Source: {
+        import.meta.env.VITE_GEMINI_API_KEY ? 'import.meta.env' :
+        (window as any).__VITE_GEMINI_API_KEY__ ? 'window' :
+        (process as any).env?.VITE_GEMINI_API_KEY ? 'process.env' :
+        apiKey === 'FALLBACK_USED' ? 'fallback' : 'unknown'
+      }</div>
       <div>All Env Vars: {Object.keys(import.meta.env).join(', ')}</div>
     </div>
   );
