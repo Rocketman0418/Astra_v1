@@ -1,10 +1,9 @@
 [build]
   publish = "dist"
-  command = "npm run build && echo 'Build completed successfully'"
+  command = "npm ci && npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_GEMINI_API_KEY = ""
 
 [[redirects]]
   from = "/*"
