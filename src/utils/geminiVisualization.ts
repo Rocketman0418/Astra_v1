@@ -138,12 +138,12 @@ export const detectContentType = (content: string): 'financial' | 'meeting' | 'g
   return 'general';
 };
 
-export const callGeminiAPI = async (prompt: string, model: string = GEMINI_CONFIG.model): Promise<string> => {
-  if (!GEMINI_CONFIG.apiKey) {
+export const callGeminiAPI = async (prompt: string, apiKey: string, model: string = GEMINI_CONFIG.model): Promise<string> => {
+  if (!apiKey) {
     throw new Error('Gemini API key not configured. The visualization feature requires a Google AI Studio API key. Please contact your administrator to configure the VITE_GEMINI_API_KEY environment variable.');
   }
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_CONFIG.apiKey}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
