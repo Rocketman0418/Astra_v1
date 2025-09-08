@@ -533,52 +533,57 @@ const VisualizationPage: React.FC = () => {
       setError(null);
       
       try {
-        // Get API key with multiple fallback methods
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 
-                      (window as any).__VITE_GEMINI_API_KEY__ || 
-                      (process as any).env?.VITE_GEMINI_API_KEY ||
-                      'AIzaSyCsZwYakYNFcO037li73JGjXTtc0DYmdcQ'; // Temporary fallback
+        // Force use the API key from Netlify
+        const apiKey = 'AIzaSyCsZwYakYNFcO037li73JGjXTtc0DYmdcQ';
         
-        console.log('🔑 API Key Detection:', {
-          hasKey: !!apiKey,
-          keyLength: apiKey?.length || 0,
-          keyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'none',
-          source: import.meta.env.VITE_GEMINI_API_KEY ? 'import.meta.env' :
-                  (window as any).__VITE_GEMINI_API_KEY__ ? 'window' :
-                  (process as any).env?.VITE_GEMINI_API_KEY ? 'process.env' : 'fallback'
-        });
+        console.log('🔑 Using hardcoded API key for testing');
+        console.log('🔑 API Key length:', apiKey.length);
+        console.log('🔑 API Key prefix:', apiKey.substring(0, 15) + '...');
         
-        // Always attempt API call if we have any key
-        if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined' && apiKey.length > 10) {
-          console.log('🚀 Attempting Gemini API call...');
+        console.log('🚀 Starting Gemini API call...');
+        const prompt = generateQuickVisualizationPrompt(messageContent);
+        console.log('📝 Prompt length:', prompt.length);
+        console.log('📝 Prompt preview:', prompt.substring(0, 200) + '...');
+        
+        try {
+          const response = await callGeminiAPI(prompt, apiKey);
+          console.log('✅ Gemini API SUCCESS!');
+          console.log('📦 Response length:', response.length);
+          console.log('📦 Response preview:', response.substring(0, 500) + '...');
           
-          try {
-            const prompt = generateQuickVisualizationPrompt(messageContent);
-            console.log('📝 Prompt generated, length:', prompt.length);
-            
-            const response = await callGeminiAPI(prompt, apiKey);
-            console.log('✅ Gemini API success! Response length:', response.length);
-            
+          // Validate that we got HTML content
+          if (response.includes('<!DOCTYPE html>') || response.includes('<html')) {
+            console.log('✅ Valid HTML response detected');
             setVisualizationHTML(response);
             return;
-          } catch (apiError) {
-            console.error('❌ Gemini API failed:', apiError);
-            console.log('🔄 Falling back to default visualization...');
-            // Don't set error, just fall through to fallback
+          } else {
+            console.log('⚠️ Response doesn\'t look like HTML, using fallback');
+            throw new Error('Invalid HTML response from Gemini');
           }
-        } else {
-          console.log('❌ No valid API key, using fallback');
+        } catch (apiError) {
+          console.error('❌ Gemini API FAILED:', apiError);
+          console.error('❌ Error details:', {
+            message: apiError instanceof Error ? apiError.message : 'Unknown error',
+            stack: apiError instanceof Error ? apiError.stack : 'No stack trace'
+          });
+          
+          // Set the error so user can see what went wrong
+          setError(`Gemini API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+          
+          // Still show fallback
+          console.log('🔄 Using fallback visualization...');
         }
         
-        // Use fallback visualization
-        console.log('📊 Using fallback visualization');
+        // Fallback visualization
+        console.log('📊 Generating fallback visualization');
         const fallbackHTML = generateFallbackVisualization(messageContent);
         setVisualizationHTML(fallbackHTML);
         
       } catch (error) {
-        console.error('❌ Visualization generation completely failed:', error);
+        console.error('❌ Complete failure:', error);
+        setError(`Complete failure: ${error instanceof Error ? error.message : 'Unknown error'}`);
         
-        // Final fallback
+        // Emergency fallback
         const fallbackHTML = generateFallbackVisualization(messageContent);
         setVisualizationHTML(fallbackHTML);
       } finally {
@@ -730,41 +735,61 @@ const VisualizationPage: React.FC = () => {
 
   // Helper function to call Gemini API
   const callGeminiAPI = async (prompt: string, apiKey: string): Promise<string> => {
-    console.log('🌐 Making Gemini API call...');
-    console.log('🔑 Using API key:', apiKey.substring(0, 10) + '...');
+    console.log('🌐 callGeminiAPI function started');
+    console.log('🔑 API key received:', apiKey.substring(0, 15) + '...');
     
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
-    console.log('🎯 API URL:', url.replace(apiKey, 'API_KEY_HIDDEN'));
+    const model = 'gemini-2.0-flash-exp';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    console.log('🎯 Full URL (key hidden):', url.replace(apiKey, '[API_KEY]'));
     
+    const requestBody = {
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.3,
+        topK: 40,
+        topP: 0.95,
+      }
+    };
+    
+    console.log('📤 Request body:', {
+      contentsLength: requestBody.contents.length,
+      promptLength: prompt.length,
+      config: requestBody.generationConfig
+    });
+    
+    console.log('🌐 Making fetch request...');
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          topK: 40,
-          topP: 0.95,
-        }
-      })
+      body: JSON.stringify(requestBody)
     });
 
-    console.log('📡 API Response:', { status: response.status, ok: response.ok });
+    console.log('📡 Response received:', { 
+      status: response.status, 
+      statusText: response.statusText,
+      ok: response.ok,
+      headers: Object.fromEntries(response.headers.entries())
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ API Error response:', errorText);
-      throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
+      console.error('❌ Error response body:', errorText);
+      throw new Error(`Gemini API HTTP ${response.status}: ${response.statusText} - ${errorText}`);
     }
 
+    console.log('📦 Parsing JSON response...');
     const data = await response.json();
-    console.log('📦 API Response keys:', Object.keys(data));
+    console.log('📦 Response structure:', {
+      keys: Object.keys(data),
+      hasCandidates: !!data.candidates,
+      candidatesLength: data.candidates?.length || 0
+    });
     
     if (data.error) {
       console.error('❌ API returned error:', data.error);
@@ -772,24 +797,37 @@ const VisualizationPage: React.FC = () => {
     }
     
     if (!data.candidates || data.candidates.length === 0) {
-      console.error('❌ No candidates in response:', data);
-      throw new Error('No candidates returned from Gemini API');
+      console.error('❌ No candidates in response. Full response:', JSON.stringify(data, null, 2));
+      throw new Error('No candidates returned from Gemini API. This may be due to safety filters or content policy violations.');
     }
     
     const candidate = data.candidates[0];
-    console.log('🎯 Candidate finish reason:', candidate.finishReason);
+    console.log('🎯 First candidate:', {
+      finishReason: candidate.finishReason,
+      hasContent: !!candidate.content,
+      hasParts: !!candidate.content?.parts,
+      partsLength: candidate.content?.parts?.length || 0
+    });
     
     if (candidate.finishReason === 'SAFETY') {
-      throw new Error('Content was blocked by Gemini safety filters');
+      throw new Error('Content was blocked by Gemini safety filters. Try simplifying your request or removing potentially sensitive content.');
+    }
+    
+    if (candidate.finishReason === 'MAX_TOKENS') {
+      throw new Error('Response was truncated due to length limits. The content was too long for the model to process.');
     }
     
     if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
-      console.error('❌ Invalid candidate structure:', candidate);
-      throw new Error('Invalid response structure from Gemini API');
+      console.error('❌ Invalid candidate structure:', JSON.stringify(candidate, null, 2));
+      throw new Error(`Invalid response structure from Gemini API. Finish reason: ${candidate.finishReason || 'unknown'}`);
     }
 
-    console.log('✅ API call successful! Returning generated content');
-    return candidate.content.parts[0].text;
+    const generatedText = candidate.content.parts[0].text;
+    console.log('✅ Successfully extracted text from API response');
+    console.log('📝 Generated text length:', generatedText.length);
+    console.log('📝 Generated text preview:', generatedText.substring(0, 200) + '...');
+    
+    return generatedText;
   };
 
   // Generate visualization prompt
