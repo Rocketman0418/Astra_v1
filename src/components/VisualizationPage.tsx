@@ -53,14 +53,20 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           const prompt = generateQuickVisualizationPrompt(messageContent);
           const response = await callGeminiAPI(prompt, apiKey);
           
+          // Clean up the response - remove markdown code blocks if present
+          let cleanedResponse = response;
+          if (response.includes('```html')) {
+            cleanedResponse = response.replace(/```html\s*/g, '').replace(/```\s*$/g, '');
+          }
+          
           // Validate that we got HTML content
-          if (response.includes('<!DOCTYPE html>') || response.includes('<html')) {
+          if (cleanedResponse.includes('<!DOCTYPE html>') || cleanedResponse.includes('<html')) {
             console.log('✅ Valid HTML response from Gemini API');
-            setVisualizationHTML(response);
+            setVisualizationHTML(cleanedResponse);
             
             // Cache the API-generated visualization
             if (cacheVisualization && messageId) {
-              cacheVisualization(messageId, response);
+              cacheVisualization(messageId, cleanedResponse);
             }
             return;
           } else {
@@ -254,7 +260,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <img 
-            src="/RocketHub Logo Alt 1.png" 
+            src="https://astracompanyagent.netlify.app/RocketHub%20Logo%20Alt%201.png" 
             alt="RocketHub Logo" 
             className="h-10 sm:h-14 w-auto flex-shrink-0"
           />
