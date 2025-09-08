@@ -22,8 +22,6 @@ function App() {
             onMarkAsVisualized={markMessageAsVisualized}
             cacheVisualization={cacheVisualization}
             getCachedVisualization={getCachedVisualization}
-            isMessageVisualized={isMessageVisualized}
-            onMarkAsVisualized={markMessageAsVisualized}
           />
           <MessageInput 
             onSendMessage={sendMessage}
