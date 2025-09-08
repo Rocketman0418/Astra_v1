@@ -121,6 +121,10 @@ const useChat = () => {
         environment: import.meta.env.MODE,
         allEnvVars: Object.keys(import.meta.env)
       });
+      
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ chatInput: messageText }),
