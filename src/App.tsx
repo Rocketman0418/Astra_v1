@@ -113,9 +113,14 @@ const useChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
+      // Check if API key is available
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      console.log('API Key check:', {
+        hasApiKey: !!apiKey,
+        apiKeyLength: apiKey ? apiKey.length : 0,
+        environment: import.meta.env.MODE,
+        allEnvVars: Object.keys(import.meta.env)
+      });
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ chatInput: messageText }),
@@ -260,12 +265,27 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       let cleanText = text;
       
       try {
-        const jsonMatch = text.match(/^\{"output":"(.*)"\}$/);
-        if (jsonMatch) {
-          cleanText = jsonMatch[1];
+      if (apiKey && apiKey.trim() !== '') {
+        // Try to use Gemini API
+        console.log('Attempting to use Gemini API...');
+        const prompt = generateQuickVisualizationPrompt(messageContent);
+        const response = await callGeminiAPI(prompt, apiKey);
+        setVisualizationHTML(response);
+        
+        // Cache the AI-generated visualization
+        if (cacheVisualization && messageId) {
+          cacheVisualization(messageId, response);
         }
-      } catch (e) {
-        // If not JSON, use original text
+      } else {
+        // Use fallback visualization
+        console.log('Using fallback visualization - no API key available');
+        const fallbackHTML = generateFallbackVisualization(messageContent);
+        setVisualizationHTML(fallbackHTML);
+        
+        // Cache the fallback visualization
+        if (cacheVisualization && messageId) {
+          cacheVisualization(messageId, fallbackHTML);
+        }
       }
       
       cleanText = cleanText.replace(/\\n/g, '\n');
@@ -633,7 +653,16 @@ const VisualizationPage: React.FC = () => {
     };
 
     setTimeout(() => {
-      const html = generateSimpleVisualization(messageContent);
+      
+      // If API fails, fall back to static visualization
+      console.log('API failed, using fallback visualization');
+      const fallbackHTML = generateFallbackVisualization(messageContent);
+      setVisualizationHTML(fallbackHTML);
+      
+      // Cache the fallback visualization
+      if (cacheVisualization && messageId) {
+        cacheVisualization(messageId, fallbackHTML);
+      }
       setVisualizationHTML(html);
       setIsLoading(false);
     }, 1000);
@@ -641,6 +670,82 @@ const VisualizationPage: React.FC = () => {
 
   const handleBack = () => {
     navigate('/');
+  };
+
+  // Helper function to call Gemini API
+  const callGeminiAPI = async (prompt: string, apiKey: string): Promise<string> => {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.3,
+          topK: 40,
+          topP: 0.95,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
+    }
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No candidates returned from Gemini API');
+    }
+    
+    const candidate = data.candidates[0];
+    
+    if (candidate.finishReason === 'SAFETY') {
+      throw new Error('Content was blocked by Gemini safety filters');
+    }
+    
+    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+      throw new Error('Invalid response structure from Gemini API');
+    }
+
+    return candidate.content.parts[0].text;
+  };
+
+  // Generate visualization prompt
+  const generateQuickVisualizationPrompt = (content: string) => {
+    return `Create a complete, self-contained HTML visualization dashboard for this business content. The visualization should be professional, interactive, and tailored to the specific content type.
+
+Content to visualize:
+${content}
+
+Requirements:
+1. Generate a complete HTML document with <!DOCTYPE html>, <html>, <head>, and <body> tags
+2. Include embedded CSS in <style> tags and JavaScript in <script> tags - NO external dependencies
+3. Use a full viewport layout with min-height: 100vh and proper body styling
+4. Create actual data visualizations using HTML5 Canvas, SVG, or CSS-based charts
+5. Extract key metrics from the content and create realistic sample data if needed
+6. Use RocketHub branding: orange #FF4500 primary color, dark gradient backgrounds from #1a1a2e to #16213e
+7. Include a prominent header with rocket emoji 🚀 and descriptive title
+8. Create metric cards with large numbers, labels, and visual indicators
+9. Add progress bars, bar charts, or simple visualizations using CSS and HTML
+10. Use white text on dark backgrounds for readability
+11. Make it responsive with proper padding, margins, and flexbox layouts
+12. Include hover effects and smooth transitions
+13. Ensure all text is clearly visible with proper contrast
+14. Use modern CSS with border-radius, box-shadow, and gradients
+15. Create realistic data points based on the content context
+16. Make the layout fill the entire viewport properly
+
+Return ONLY the complete HTML document, no explanations or markdown formatting.`;
   };
 
   if (isLoading) {
