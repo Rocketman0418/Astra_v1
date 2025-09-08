@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['RocketHub Favicon.png', 'RocketHub Logo Alt 1.png'],
+      includeAssets: ['logo.png'],
       manifest: {
         name: 'Astra AI - Company Intelligence Agent',
         short_name: 'Astra AI',
@@ -42,13 +42,13 @@ export default defineConfig(({ mode }) => {
         start_url: '/',
         icons: [
           {
-            src: 'RocketHub Favicon.png',
+            src: 'logo.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: 'RocketHub Favicon.png',
+            src: 'logo.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -61,7 +61,7 @@ export default defineConfig(({ mode }) => {
             short_name: 'Chat',
             description: 'Start a new conversation with Astra',
             url: '/',
-            icons: [{ src: 'RocketHub Favicon.png', sizes: '96x96' }]
+            icons: [{ src: 'logo.png', sizes: '96x96' }]
           }
         ]
       },
