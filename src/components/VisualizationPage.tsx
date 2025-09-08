@@ -46,10 +46,6 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         apiKeyLength: apiKey ? apiKey.length : 0,
         environment: import.meta.env.MODE
       });
-        hasApiKey: !!apiKey,
-        apiKeyLength: apiKey ? apiKey.length : 0,
-        environment: import.meta.env.MODE
-      });
       
       if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined') {
         console.log('🚀 Attempting Gemini API call...');
