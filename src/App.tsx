@@ -517,6 +517,7 @@ const VisualizationPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [visualizationHTML, setVisualizationHTML] = useState<string>('');
 
   const messageContent = location.state?.messageContent || '';
@@ -527,8 +528,65 @@ const VisualizationPage: React.FC = () => {
       return;
     }
 
+    const generateVisualization = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Comprehensive API key debugging
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        
+        console.log('=== API KEY DEBUG INFO ===');
+        console.log('Raw API Key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
+        console.log('API Key exists:', !!apiKey);
+        console.log('API Key length:', apiKey ? apiKey.length : 0);
+        console.log('API Key type:', typeof apiKey);
+        console.log('Environment mode:', import.meta.env.MODE);
+        console.log('All env vars:', Object.keys(import.meta.env));
+        console.log('Vite env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+        console.log('==========================');
+        
+        if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined') {
+          console.log('✅ API key found, attempting Gemini API call...');
+          
+          try {
+            const prompt = generateQuickVisualizationPrompt(messageContent);
+            console.log('Generated prompt length:', prompt.length);
+            
+            const response = await callGeminiAPI(prompt, apiKey);
+            console.log('✅ Gemini API call successful');
+            console.log('Response length:', response.length);
+            
+            setVisualizationHTML(response);
+            return;
+          } catch (apiError) {
+            console.error('❌ Gemini API call failed:', apiError);
+            setError(`API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+          }
+        } else {
+          console.log('❌ No valid API key found, using fallback');
+          setError('API key not configured or invalid');
+        }
+        
+        // Use fallback visualization
+        console.log('Using fallback visualization');
+        const fallbackHTML = generateFallbackVisualization(messageContent);
+        setVisualizationHTML(fallbackHTML);
+        
+      } catch (error) {
+        console.error('❌ Visualization generation failed:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
+        
+        // Final fallback
+        const fallbackHTML = generateFallbackVisualization(messageContent);
+        setVisualizationHTML(fallbackHTML);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     // Generate a simple fallback visualization
-    const generateSimpleVisualization = (content: string): string => {
+    const generateFallbackVisualization = (content: string): string => {
       const lines = content.split('\n').filter(line => line.trim());
       const words = content.split(/\s+/).filter(w => w.trim());
       
@@ -631,58 +689,50 @@ const VisualizationPage: React.FC = () => {
 </html>`;
     };
 
-    const generateVisualization = async () => {
-      try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        
-        if (apiKey && apiKey.trim() !== '') {
-          // Try to use Gemini API
-          console.log('Attempting to use Gemini API...');
-          const prompt = generateQuickVisualizationPrompt(messageContent);
-          const response = await callGeminiAPI(prompt, apiKey);
-          setVisualizationHTML(response);
-          
-          // Cache the AI-generated visualization
-          if (cacheVisualization && messageId) {
-            cacheVisualization(messageId, response);
-          }
-        } else {
-          // Use fallback visualization
-          console.log('Using fallback visualization - no API key available');
-          const fallbackHTML = generateFallbackVisualization(messageContent);
-          setVisualizationHTML(fallbackHTML);
-          
-          // Cache the fallback visualization
-          if (cacheVisualization && messageId) {
-            cacheVisualization(messageId, fallbackHTML);
-          }
-        }
-      } catch (error) {
-        // If API fails, fall back to static visualization
-        console.log('API failed, using fallback visualization');
-        const fallbackHTML = generateFallbackVisualization(messageContent);
-        setVisualizationHTML(fallbackHTML);
-        
-        // Cache the fallback visualization
-        if (cacheVisualization && messageId) {
-          cacheVisualization(messageId, fallbackHTML);
-        }
-      }
-    };
-
-    setTimeout(() => {
-      const html = generateSimpleVisualization(messageContent);
-      setVisualizationHTML(html);
-      setIsLoading(false);
-    }, 1000);
+    // Generate visualization with proper async handling
+    generateVisualization();
   }, [messageContent, navigate]);
 
   const handleBack = () => {
     navigate('/');
   };
 
+  const handleRetry = () => {
+    // Retry visualization generation
+    const generateVisualization = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        
+        if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined') {
+          const prompt = generateQuickVisualizationPrompt(messageContent);
+          const response = await callGeminiAPI(prompt, apiKey);
+          setVisualizationHTML(response);
+        } else {
+          const fallbackHTML = generateFallbackVisualization(messageContent);
+          setVisualizationHTML(fallbackHTML);
+        }
+      } catch (error) {
+        console.error('Retry failed:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
+        const fallbackHTML = generateFallbackVisualization(messageContent);
+        setVisualizationHTML(fallbackHTML);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    generateVisualization();
+  };
+
   // Helper function to call Gemini API
   const callGeminiAPI = async (prompt: string, apiKey: string): Promise<string> => {
+    console.log('Making API call to Gemini...');
+    console.log('API Key prefix:', apiKey.substring(0, 10));
+    console.log('Prompt length:', prompt.length);
+    
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
@@ -702,30 +752,41 @@ const VisualizationPage: React.FC = () => {
       })
     });
 
+    console.log('API Response status:', response.status);
+    console.log('API Response ok:', response.ok);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error response:', errorText);
       throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('API Response data keys:', Object.keys(data));
     
     if (data.error) {
+      console.error('API returned error:', data.error);
       throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
     }
     
     if (!data.candidates || data.candidates.length === 0) {
+      console.error('No candidates in response:', data);
       throw new Error('No candidates returned from Gemini API');
     }
     
     const candidate = data.candidates[0];
+    console.log('Candidate finish reason:', candidate.finishReason);
     
     if (candidate.finishReason === 'SAFETY') {
       throw new Error('Content was blocked by Gemini safety filters');
     }
     
     if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+      console.error('Invalid candidate structure:', candidate);
       throw new Error('Invalid response structure from Gemini API');
     }
 
+    console.log('✅ API call successful, returning content');
     return candidate.content.parts[0].text;
   };
 
@@ -772,6 +833,65 @@ Return ONLY the complete HTML document, no explanations or markdown formatting.`
             <p className="text-sm sm:text-base text-gray-400 mb-4">
               Astra is analyzing your data and creating a custom dashboard...
             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
+        <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <img 
+              src="/RocketHub Logo Alt 1.png" 
+              alt="RocketHub Logo" 
+              className="h-10 sm:h-14 w-auto flex-shrink-0"
+            />
+            <div className="flex-1 text-center">
+              <h1 className="text-sm sm:text-xl font-bold text-white flex items-center justify-center space-x-2 sm:space-x-3">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm sm:text-lg">🚀</span>
+                </div>
+                <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-wide truncate">
+                  Astra: Company Intelligence Agent
+                </span>
+              </h1>
+            </div>
+            <div className="w-10 sm:w-14 flex justify-end flex-shrink-0">
+              <button
+                onClick={handleBack}
+                className="flex items-center space-x-1 sm:space-x-2 text-gray-300 hover:text-white transition-colors px-2 sm:px-3 py-2 rounded-lg hover:bg-gray-700 text-sm"
+              >
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <span className="text-xl sm:text-2xl">⚠️</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Visualization Error</h2>
+            <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">{error}</p>
+            <div className="space-y-3">
+              <button
+                onClick={handleRetry}
+                className="w-full bg-[#FF4500] text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-[#EA580C] transition-colors text-sm sm:text-base"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleBack}
+                className="w-full bg-gray-700 text-white px-4 sm:px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base"
+              >
+                Back to Chat
+              </button>
+            </div>
           </div>
         </div>
       </div>

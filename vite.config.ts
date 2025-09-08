@@ -9,8 +9,21 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
+  // Log environment variables for debugging
+  console.log('🔧 Vite Config Debug:', {
+    mode,
+    hasGeminiKey: !!env.VITE_GEMINI_API_KEY,
+    geminiKeyLength: env.VITE_GEMINI_API_KEY?.length || 0,
+    geminiKeyStart: env.VITE_GEMINI_API_KEY?.substring(0, 10) || 'N/A',
+    allEnvKeys: Object.keys(env).filter(key => key.startsWith('VITE_'))
+  });
+  
   return {
   base: '/',
+  define: {
+    // Explicitly define environment variables for better compatibility
+    __VITE_GEMINI_API_KEY__: JSON.stringify(env.VITE_GEMINI_API_KEY || ''),
+  },
   plugins: [
     react(),
     VitePWA({
