@@ -754,13 +754,4 @@ function App() {
   );
 }
 
-// Root App with Router
-function AppWithRouter() {
-  return (
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  );
-}
-
-export default AppWithRouter;
+export default App;
