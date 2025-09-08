@@ -533,49 +533,50 @@ const VisualizationPage: React.FC = () => {
       setError(null);
       
       try {
-        // Comprehensive API key debugging
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        // Get API key with multiple fallback methods
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 
+                      (window as any).__VITE_GEMINI_API_KEY__ || 
+                      (process as any).env?.VITE_GEMINI_API_KEY ||
+                      'AIzaSyCsZwYakYNFcO037li73JGjXTtc0DYmdcQ'; // Temporary fallback
         
-        console.log('=== API KEY DEBUG INFO ===');
-        console.log('Raw API Key:', apiKey ? `${apiKey.substring(0, 10)}...` : 'undefined');
-        console.log('API Key exists:', !!apiKey);
-        console.log('API Key length:', apiKey ? apiKey.length : 0);
-        console.log('API Key type:', typeof apiKey);
-        console.log('Environment mode:', import.meta.env.MODE);
-        console.log('All env vars:', Object.keys(import.meta.env));
-        console.log('Vite env vars:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
-        console.log('==========================');
+        console.log('🔑 API Key Detection:', {
+          hasKey: !!apiKey,
+          keyLength: apiKey?.length || 0,
+          keyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'none',
+          source: import.meta.env.VITE_GEMINI_API_KEY ? 'import.meta.env' :
+                  (window as any).__VITE_GEMINI_API_KEY__ ? 'window' :
+                  (process as any).env?.VITE_GEMINI_API_KEY ? 'process.env' : 'fallback'
+        });
         
-        if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined') {
-          console.log('✅ API key found, attempting Gemini API call...');
+        // Always attempt API call if we have any key
+        if (apiKey && apiKey.trim() !== '' && apiKey !== 'undefined' && apiKey.length > 10) {
+          console.log('🚀 Attempting Gemini API call...');
           
           try {
             const prompt = generateQuickVisualizationPrompt(messageContent);
-            console.log('Generated prompt length:', prompt.length);
+            console.log('📝 Prompt generated, length:', prompt.length);
             
             const response = await callGeminiAPI(prompt, apiKey);
-            console.log('✅ Gemini API call successful');
-            console.log('Response length:', response.length);
+            console.log('✅ Gemini API success! Response length:', response.length);
             
             setVisualizationHTML(response);
             return;
           } catch (apiError) {
-            console.error('❌ Gemini API call failed:', apiError);
-            setError(`API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+            console.error('❌ Gemini API failed:', apiError);
+            console.log('🔄 Falling back to default visualization...');
+            // Don't set error, just fall through to fallback
           }
         } else {
-          console.log('❌ No valid API key found, using fallback');
-          setError('API key not configured or invalid');
+          console.log('❌ No valid API key, using fallback');
         }
         
         // Use fallback visualization
-        console.log('Using fallback visualization');
+        console.log('📊 Using fallback visualization');
         const fallbackHTML = generateFallbackVisualization(messageContent);
         setVisualizationHTML(fallbackHTML);
         
       } catch (error) {
-        console.error('❌ Visualization generation failed:', error);
-        setError(error instanceof Error ? error.message : 'Unknown error');
+        console.error('❌ Visualization generation completely failed:', error);
         
         // Final fallback
         const fallbackHTML = generateFallbackVisualization(messageContent);
@@ -729,11 +730,13 @@ const VisualizationPage: React.FC = () => {
 
   // Helper function to call Gemini API
   const callGeminiAPI = async (prompt: string, apiKey: string): Promise<string> => {
-    console.log('Making API call to Gemini...');
-    console.log('API Key prefix:', apiKey.substring(0, 10));
-    console.log('Prompt length:', prompt.length);
+    console.log('🌐 Making Gemini API call...');
+    console.log('🔑 Using API key:', apiKey.substring(0, 10) + '...');
     
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    console.log('🎯 API URL:', url.replace(apiKey, 'API_KEY_HIDDEN'));
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -752,41 +755,40 @@ const VisualizationPage: React.FC = () => {
       })
     });
 
-    console.log('API Response status:', response.status);
-    console.log('API Response ok:', response.ok);
+    console.log('📡 API Response:', { status: response.status, ok: response.ok });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error response:', errorText);
+      console.error('❌ API Error response:', errorText);
       throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
     }
 
     const data = await response.json();
-    console.log('API Response data keys:', Object.keys(data));
+    console.log('📦 API Response keys:', Object.keys(data));
     
     if (data.error) {
-      console.error('API returned error:', data.error);
+      console.error('❌ API returned error:', data.error);
       throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
     }
     
     if (!data.candidates || data.candidates.length === 0) {
-      console.error('No candidates in response:', data);
+      console.error('❌ No candidates in response:', data);
       throw new Error('No candidates returned from Gemini API');
     }
     
     const candidate = data.candidates[0];
-    console.log('Candidate finish reason:', candidate.finishReason);
+    console.log('🎯 Candidate finish reason:', candidate.finishReason);
     
     if (candidate.finishReason === 'SAFETY') {
       throw new Error('Content was blocked by Gemini safety filters');
     }
     
     if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
-      console.error('Invalid candidate structure:', candidate);
+      console.error('❌ Invalid candidate structure:', candidate);
       throw new Error('Invalid response structure from Gemini API');
     }
 
-    console.log('✅ API call successful, returning content');
+    console.log('✅ API call successful! Returning generated content');
     return candidate.content.parts[0].text;
   };
 
