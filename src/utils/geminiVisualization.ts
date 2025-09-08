@@ -139,9 +139,17 @@ export const detectContentType = (content: string): 'financial' | 'meeting' | 'g
 };
 
 export const callGeminiAPI = async (prompt: string, apiKey: string, model: string = GEMINI_CONFIG.model): Promise<string> => {
-  if (!apiKey) {
+  if (!apiKey || apiKey.trim() === '' || apiKey === 'undefined') {
     throw new Error('Gemini API key not configured. The visualization feature requires a Google AI Studio API key. Please contact your administrator to configure the VITE_GEMINI_API_KEY environment variable.');
   }
+
+  console.log('🔑 Gemini API Call Debug:', {
+    hasApiKey: !!apiKey,
+    apiKeyLength: apiKey ? apiKey.length : 0,
+    apiKeyStart: apiKey ? apiKey.substring(0, 10) : 'N/A',
+    model: model,
+    environment: import.meta.env.MODE
+  });
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: 'POST',
@@ -163,21 +171,28 @@ export const callGeminiAPI = async (prompt: string, apiKey: string, model: strin
   });
 
   if (!response.ok) {
+    console.error('❌ Gemini API HTTP Error:', response.status, response.statusText);
     throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
   }
 
   const data = await response.json();
   
   // Log the full response for debugging
-  console.log('Gemini API Response:', JSON.stringify(data, null, 2));
+  console.log('✅ Gemini API Response received:', {
+    hasCandidates: !!data.candidates,
+    candidatesLength: data.candidates?.length || 0,
+    hasError: !!data.error
+  });
   
   // Check for error in response
   if (data.error) {
+    console.error('❌ Gemini API Response Error:', data.error);
     throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
   }
   
   // Check if candidates array exists and has content
   if (!data.candidates || data.candidates.length === 0) {
+    console.error('❌ No candidates in Gemini response');
     throw new Error('No candidates returned from Gemini API. This may be due to safety filters or prompt complexity.');
   }
   
@@ -185,18 +200,22 @@ export const callGeminiAPI = async (prompt: string, apiKey: string, model: strin
   
   // Check if candidate was blocked by safety filters
   if (candidate.finishReason === 'SAFETY') {
+    console.error('❌ Content blocked by safety filters');
     throw new Error('Content was blocked by Gemini safety filters. Try simplifying your request.');
   }
   
   // Check if response was truncated due to token limit
   if (candidate.finishReason === 'MAX_TOKENS') {
+    console.error('❌ Response truncated due to token limit');
     throw new Error('The visualization was too complex and exceeded the token limit. Please try the Quick visualization instead, or ask for a simpler analysis.');
   }
   
   if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+    console.error('❌ Invalid response structure:', candidate);
     throw new Error(`Invalid response structure from Gemini API. Finish reason: ${candidate.finishReason || 'unknown'}`);
   }
 
+  console.log('✅ Gemini API call successful, returning content');
   return candidate.content.parts[0].text;
 };
 
@@ -232,26 +251,31 @@ export const generateFallbackVisualization = (content: string): string => {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
             min-height: 100vh;
-            padding: 10px;
+            padding: 8px;
             font-size: 16px;
             line-height: 1.6;
+            margin: 0;
+            width: 100vw;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 100%;
+            max-width: 100vw;
             margin: 0 auto;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 20px 0;
+            margin-bottom: 15px;
+            padding: 15px 0;
             border-bottom: 2px solid #FF4500;
         }
         
         .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
+            font-size: 1.4rem;
+            margin-bottom: 6px;
             background: linear-gradient(45deg, #FF4500, #FF6B35);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -260,66 +284,73 @@ export const generateFallbackVisualization = (content: string): string => {
         }
         
         .header p {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.8;
         }
         
         .content-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             border: 1px solid rgba(255, 69, 0, 0.3);
             backdrop-filter: blur(10px);
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .content-text {
             line-height: 1.6;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             white-space: pre-wrap;
             word-wrap: break-word;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
         }
         
         .api-notice {
             background: linear-gradient(45deg, #4CAF50, #45a049);
             border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .api-notice h3 {
-            margin-bottom: 8px;
-            font-size: 1.1rem;
+            margin-bottom: 6px;
+            font-size: 1rem;
         }
         
         .api-notice p {
             opacity: 0.9;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
         }
         
         .insights-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 15px;
+            width: 100%;
         }
         
         .insight-card {
             background: rgba(76, 175, 80, 0.1);
             border: 1px solid #4CAF50;
             border-radius: 10px;
-            padding: 15px;
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .insight-title {
             color: #4CAF50;
             font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 1rem;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
         }
         
         .insight-list {
@@ -328,9 +359,9 @@ export const generateFallbackVisualization = (content: string): string => {
         }
         
         .insight-list li {
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         .insight-list li:last-child {
@@ -340,27 +371,30 @@ export const generateFallbackVisualization = (content: string): string => {
         .stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
         }
         
         .stat-card {
             background: rgba(255, 69, 0, 0.1);
             border: 1px solid #FF4500;
             border-radius: 10px;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .stat-number {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #FF4500;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             opacity: 0.8;
         }
         

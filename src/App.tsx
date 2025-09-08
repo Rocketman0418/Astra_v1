@@ -314,11 +314,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const shouldTruncate = !isUser && formatMessage(message).split('\n').length > 10;
   const messageLines = formatMessage(message).split('\n');
-  const displayLines = shouldTruncate && !isExpanded ? messageLines.slice(0, 10) : messageLines;
+  // On mobile, truncate after 5 lines, on desktop after 10 lines
+  const isMobile = window.innerWidth < 768;
+  const truncateLimit = isMobile ? 5 : 10;
+  const shouldTruncateMobile = !isUser && messageLines.length > truncateLimit;
+  const displayLines = shouldTruncateMobile && !isExpanded ? messageLines.slice(0, truncateLimit) : messageLines;
   const displayMessage = displayLines.join('\n');
 
   return (
-    <div className={`flex items-start space-x-2 sm:space-x-3 mb-3 sm:mb-6 px-1 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div className={`flex items-start space-x-2 sm:space-x-3 mb-3 sm:mb-6 px-2 w-full ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
         isUser ? 'bg-blue-600' : 'bg-[#FF4500]'
       }`}>
@@ -329,7 +333,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         )}
       </div>
 
-      <div className={`max-w-[280px] sm:max-w-md lg:max-w-lg xl:max-w-xl ${isUser ? 'ml-auto' : 'mr-auto'}`}>
+      <div className={`max-w-[calc(100vw-80px)] sm:max-w-md lg:max-w-lg xl:max-w-xl ${isUser ? 'ml-auto' : 'mr-auto'}`}>
         <div className={`rounded-2xl px-4 py-3 ${
           isUser ? 'bg-blue-600 text-white' : 'bg-[#FF4500] text-white'
         }`}>
@@ -346,7 +350,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             })}
           </div>
           
-          {shouldTruncate && (
+          {shouldTruncateMobile && (
             <div className="mt-3 pt-2 border-t border-white/20">
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -476,7 +480,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
   };
 
   return (
-    <div className="border-t border-gray-700 bg-[#1a1a2e] px-2 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50 safe-area-inset-bottom">
+    <div className="border-t border-gray-700 bg-[#1a1a2e] px-3 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50 safe-area-inset-bottom w-full">
       {error && (
         <div className="mb-3 flex flex-col items-start justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-3 space-y-2">
           <div className="flex items-center space-x-2">
@@ -493,7 +497,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         </div>
       )}
       
-      <div className="flex items-end space-x-3">
+      <div className="flex items-end space-x-2 sm:space-x-3 w-full">
         <div className="flex-1 relative">
           <textarea
             value={message}
@@ -501,7 +505,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
             onKeyPress={handleKeyPress}
             placeholder="Type your message to Astra..."
             disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-4 py-4 text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] max-h-[120px]"
+            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-3 sm:px-4 py-3 sm:py-4 text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-[120px]"
             rows={1}
           />
         </div>
@@ -509,7 +513,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         <button
           onClick={handleSend}
           disabled={!message.trim() || isLoading}
-          className="w-12 h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
+          className="w-12 h-12 sm:w-12 sm:h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
         >
           <Send className="w-5 h-5" />
         </button>
@@ -525,7 +529,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
+        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col w-full overflow-x-hidden">
           <Header />
           <ChatContainer 
             messages={messages} 
