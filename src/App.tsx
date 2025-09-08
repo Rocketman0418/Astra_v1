@@ -121,7 +121,7 @@ const useChat = () => {
         environment: import.meta.env.MODE,
         allEnvVars: Object.keys(import.meta.env)
       });
-
+      
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
@@ -634,28 +634,37 @@ const VisualizationPage: React.FC = () => {
 </html>`;
     };
 
+    // Generate fallback visualization
+    const generateFallbackVisualization = (content: string): string => {
+      return generateSimpleVisualization(content);
+    };
+
     setTimeout(() => {
       try {
-        // Check if API key is available
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        console.log('API Key check:', {
-          hasApiKey: !!apiKey,
-          apiKeyLength: apiKey ? apiKey.length : 0,
-          environment: import.meta.env.MODE,
-          allEnvVars: Object.keys(import.meta.env)
-        });
-        
         if (apiKey && apiKey.trim() !== '') {
           // Try to use Gemini API
           console.log('Attempting to use Gemini API...');
           const prompt = generateQuickVisualizationPrompt(messageContent);
-          const response = callGeminiAPI(prompt, apiKey);
-          setVisualizationHTML(response);
-          
-          // Cache the AI-generated visualization
-          if (cacheVisualization && messageId) {
-            cacheVisualization(messageId, response);
-          }
+          callGeminiAPI(prompt, apiKey).then(response => {
+            setVisualizationHTML(response);
+            
+            // Cache the AI-generated visualization
+            if (cacheVisualization && messageId) {
+              cacheVisualization(messageId, response);
+            }
+          }).catch(err => {
+            console.error('Gemini API failed:', err);
+            // Use fallback visualization
+            console.log('Using fallback visualization - API failed');
+            const fallbackHTML = generateFallbackVisualization(messageContent);
+            setVisualizationHTML(fallbackHTML);
+            
+            // Cache the fallback visualization
+            if (cacheVisualization && messageId) {
+              cacheVisualization(messageId, fallbackHTML);
+            }
+          });
         } else {
           // Use fallback visualization
           console.log('Using fallback visualization - no API key available');
@@ -668,6 +677,7 @@ const VisualizationPage: React.FC = () => {
           }
         }
       } catch (err) {
+        console.error('Error in visualization generation:', err);
         // If API fails, fall back to static visualization
         console.log('API failed, using fallback visualization');
         const fallbackHTML = generateFallbackVisualization(messageContent);
@@ -678,12 +688,9 @@ const VisualizationPage: React.FC = () => {
           cacheVisualization(messageId, fallbackHTML);
         }
       }
-      
-      const html = generateSimpleVisualization(messageContent);
-      setVisualizationHTML(html);
       setIsLoading(false);
     }, 1000);
-  }, [messageContent, navigate]);
+  }, [messageContent, navigate, messageId, cacheVisualization]);
 
   const handleBack = () => {
     navigate('/');
@@ -763,110 +770,6 @@ Requirements:
 16. Make the layout fill the entire viewport properly
 
 Return ONLY the complete HTML document, no explanations or markdown formatting.`;
-  };
-
-  const generateFallbackVisualization = (content: string): string => {
-    const lines = content.split('\n').filter(line => line.trim());
-    const words = content.split(/\s+/).filter(w => w.trim());
-    
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Summary</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px 0;
-            border-bottom: 2px solid #FF4500;
-        }
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #FF4500, #FF6B35);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .content-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 69, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        .content-text {
-            line-height: 1.8;
-            font-size: 1.1rem;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .stat-card {
-            background: rgba(255, 69, 0, 0.1);
-            border: 1px solid #FF4500;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #FF4500;
-            margin-bottom: 5px;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 Content Summary</h1>
-            <p>RocketHub Intelligence Dashboard</p>
-        </div>
-        
-        <div class="content-card">
-            <h2 style="color: #FF4500; margin-bottom: 20px;">📄 Full Content</h2>
-            <div class="content-text">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
-        </div>
-        
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number">${words.length}</div>
-                <div class="stat-label">Words</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${lines.length}</div>
-                <div class="stat-label">Lines</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">${content.length}</div>
-                <div class="stat-label">Characters</div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>`;
   };
 
   if (isLoading) {
