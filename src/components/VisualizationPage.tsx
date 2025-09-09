@@ -111,42 +111,42 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
+      <div className="viz-page">
         {/* Mobile Header */}
-        <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
-          <div className="flex items-center justify-between">
+        <header className="viz-header">
+          <div className="viz-header-content">
             <button
               onClick={handleBack}
-              className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
+              className="viz-back-button"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-sm">🚀</span>
+            <div className="viz-header-title">
+              <div className="viz-header-logo">
+                <span>🚀</span>
               </div>
-              <span className="text-white font-bold text-sm">Astra AI</span>
+              <span>Astra AI</span>
             </div>
-            <div className="w-9"></div>
+            <div className="viz-spacer"></div>
           </div>
         </header>
 
         {/* Loading Content */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
+        <div className="viz-content">
+          <div className="viz-loading">
+            <div className="viz-loading-icon">
+              <Loader2 className="w-8 h-8 animate-spin" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="viz-loading-title">
               Building Your Chart
             </h2>
-            <p className="text-gray-400 mb-4">
+            <p className="viz-loading-text">
               Creating your visualization...
             </p>
-            <div className="flex items-center justify-center space-x-2 text-orange-500">
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="viz-loading-dots">
+              <div className="viz-dot" style={{ animationDelay: '0ms' }}></div>
+              <div className="viz-dot" style={{ animationDelay: '150ms' }}></div>
+              <div className="viz-dot" style={{ animationDelay: '300ms' }}></div>
             </div>
           </div>
         </div>
@@ -156,44 +156,44 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
+      <div className="viz-page">
         {/* Mobile Header */}
-        <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
-          <div className="flex items-center justify-between">
+        <header className="viz-header">
+          <div className="viz-header-content">
             <button
               onClick={handleBack}
-              className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
+              className="viz-back-button"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-sm">🚀</span>
+            <div className="viz-header-title">
+              <div className="viz-header-logo">
+                <span>🚀</span>
               </div>
-              <span className="text-white font-bold text-sm">Astra AI</span>
+              <span>Astra AI</span>
             </div>
-            <div className="w-9"></div>
+            <div className="viz-spacer"></div>
           </div>
         </header>
 
         {/* Error Content */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="viz-content">
+          <div className="viz-error">
+            <div className="viz-error-icon">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Chart Failed</h2>
-            <p className="text-gray-400 mb-6">{error}</p>
-            <div className="space-y-3">
+            <h2 className="viz-error-title">Chart Failed</h2>
+            <p className="viz-error-text">{error}</p>
+            <div className="viz-error-actions">
               <button
                 onClick={handleRetry}
-                className="w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors"
+                className="viz-retry-button"
               >
                 Try Again
               </button>
               <button
                 onClick={handleBack}
-                className="w-full bg-gray-700 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+                className="viz-back-to-chat-button"
               >
                 Back to Chat
               </button>
@@ -205,47 +205,43 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
+    <div className="viz-page">
       {/* Mobile Header */}
-      <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
-        <div className="flex items-center justify-between">
+      <header className="viz-header">
+        <div className="viz-header-content">
           <button
             onClick={handleBack}
-            className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
+            className="viz-back-button"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-sm">🚀</span>
+          <div className="viz-header-title">
+            <div className="viz-header-logo">
+              <span>🚀</span>
             </div>
-            <span className="text-white font-bold text-sm">Astra AI</span>
+            <span>Astra AI</span>
           </div>
-          <div className="w-9"></div>
+          <div className="viz-spacer"></div>
         </div>
       </header>
 
       {/* Visualization Content */}
-      <div className="flex-1">
+      <div className="viz-iframe-container">
         {visualizationHTML ? (
           <iframe
             srcDoc={visualizationHTML}
-            className="w-full h-full border-0 bg-transparent"
+            className="viz-iframe"
             title="AI Generated Visualization"
             sandbox="allow-scripts allow-same-origin"
-            style={{ 
-              minHeight: 'calc(100vh - 60px)',
-              height: 'calc(100vh - 60px)'
-            }}
           />
         ) : (
-          <div className="flex items-center justify-center h-full p-4">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="viz-no-content">
+            <div className="viz-no-content-inner">
+              <div className="viz-no-content-icon">
                 <span className="text-2xl">⚠️</span>
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">No Chart Content</h2>
-              <p className="text-gray-400">The AI did not generate any chart content.</p>
+              <h2 className="viz-no-content-title">No Chart Content</h2>
+              <p className="viz-no-content-text">The AI did not generate any chart content.</p>
             </div>
           </div>
         )}
