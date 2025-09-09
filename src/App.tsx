@@ -1,551 +1,412 @@
-import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { Routes, Route, BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
-import { Send, AlertCircle, RotateCcw, Rocket, User, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
-import VisualizationPage from './components/VisualizationPage';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, BarChart3, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 
-// Types
-interface Message {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: Date;
-  isInitialResponse?: boolean;
+interface VisualizationPageProps {
+  cacheVisualization?: (messageId: string, htmlContent: string) => void;
 }
 
-// Constants
-const WEBHOOK_URL = 'https://healthrocket.app.n8n.cloud/webhook/8ec404be-7f51-47c8-8faf-0d139bd4c5e9/chat';
-const STORAGE_KEY = 'astra-chat-messages';
-const VISUALIZATIONS_KEY = 'astra-visualizations';
-const VISUALIZATION_CACHE_KEY = 'astra-visualization-cache';
-
-// Custom hook for chat functionality
-const useChat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUserMessage, setLastUserMessage] = useState<string>('');
-  const [visualizedMessages, setVisualizedMessages] = useState<Set<string>>(new Set());
-  const [visualizationCache, setVisualizationCache] = useState<Map<string, string>>(new Map());
-
-  // Load messages from session storage on mount
-  useEffect(() => {
-    const savedMessages = sessionStorage.getItem(STORAGE_KEY);
-    const savedVisualizations = sessionStorage.getItem(VISUALIZATIONS_KEY);
-    const savedCache = sessionStorage.getItem(VISUALIZATION_CACHE_KEY);
-    
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        const messagesWithDates = parsed.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }));
-        setMessages(messagesWithDates);
-      } catch (err) {
-        console.error('Failed to load saved messages:', err);
-      }
-    }
-    
-    if (savedVisualizations) {
-      try {
-        const parsed = JSON.parse(savedVisualizations);
-        setVisualizedMessages(new Set(parsed));
-      } catch (err) {
-        console.error('Failed to load saved visualizations:', err);
-      }
-    }
-    
-    if (savedCache) {
-      try {
-        const parsed = JSON.parse(savedCache);
-        setVisualizationCache(new Map(parsed));
-      } catch (err) {
-        console.error('Failed to load saved visualization cache:', err);
-      }
-    }
-  }, []);
-
-  // Save messages to session storage whenever messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    }
-  }, [messages]);
-
-  // Save visualizations to session storage whenever they change
-  useEffect(() => {
-    sessionStorage.setItem(VISUALIZATIONS_KEY, JSON.stringify(Array.from(visualizedMessages)));
-  }, [visualizedMessages]);
-
-  // Save visualization cache to session storage whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem(VISUALIZATION_CACHE_KEY, JSON.stringify(Array.from(visualizationCache.entries())));
-  }, [visualizationCache]);
-
-  const markMessageAsVisualized = (messageId: string) => {
-    setVisualizedMessages(prev => new Set([...prev, messageId]));
-  };
-
-  const isMessageVisualized = (messageId: string) => {
-    return visualizedMessages.has(messageId);
-  };
-
-  const cacheVisualization = (messageId: string, htmlContent: string) => {
-    setVisualizationCache(prev => new Map([...prev, [messageId, htmlContent]]));
-  };
-
-  const getCachedVisualization = (messageId: string) => {
-    return visualizationCache.get(messageId);
-  };
-
-  const sendMessage = async (messageText: string) => {
-    setError(null);
-    setLastUserMessage(messageText);
-    
-    // Add user message immediately
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: messageText,
-      isUser: true,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      // Check if API key is available
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      console.log('API Key check:', {
-        hasApiKey: !!apiKey,
-        apiKeyLength: apiKey ? apiKey.length : 0,
-        environment: import.meta.env.MODE,
-        allEnvVars: Object.keys(import.meta.env)
-      });
-      
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ chatInput: messageText }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to connect to Astra. ';
-        if (response.status === 500) {
-          errorMessage += 'The AI service is temporarily unavailable. Please try again in a moment.';
-        } else if (response.status === 404) {
-          errorMessage += 'The AI service endpoint was not found.';
-        } else if (response.status >= 400 && response.status < 500) {
-          errorMessage += 'There was an issue with your request.';
-        } else {
-          errorMessage += `Server error (${response.status}). Please try again.`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.text();
-      
-      // Add Astra's response
-      const astraMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data || "I'm sorry, I didn't receive a proper response. Please try again.",
-        isUser: false,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, astraMessage]);
-    } catch (err) {
-      console.error('Failed to send message:', err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Failed to connect to Astra. Please check your connection and try again.');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const retryLastMessage = () => {
-    if (lastUserMessage) {
-      sendMessage(lastUserMessage);
-    }
-  };
-
-  return {
-    messages,
-    isLoading,
-    error,
-    sendMessage,
-    retryLastMessage,
-    markMessageAsVisualized,
-    isMessageVisualized,
-    cacheVisualization,
-    getCachedVisualization
-  };
-};
-
-// Header Component
-const Header: React.FC = () => {
-  return (
-    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
-      <div className="flex items-center space-x-2 sm:space-x-3">
-        <img 
-          src="/rockethub-logo.png" 
-          alt="RocketHub Logo" 
-          className="h-10 sm:h-14 w-auto flex-shrink-0"
-          onError={(e) => {
-            console.error('Logo failed to load:', e);
-            // Hide the image if it fails to load
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        <div className="flex-1 text-center">
-          <h1 className="text-sm sm:text-xl font-bold text-white flex items-center justify-center space-x-2 sm:space-x-3">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-sm sm:text-lg">🚀</span>
-            </div>
-            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-wide truncate">
-              Astra: Company Intelligence Agent
-            </span>
-          </h1>
-        </div>
-        <div className="w-10 sm:w-14 flex-shrink-0"></div>
-      </div>
-    </header>
-  );
-};
-
-// Typing Indicator Component
-const TypingIndicator: React.FC = () => {
-  return (
-    <div className="flex items-start space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-      <div className="w-8 h-8 rounded-full bg-[#FF4500] flex items-center justify-center flex-shrink-0">
-        <Rocket className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-      </div>
-      <div className="max-w-[280px] sm:max-w-xs">
-        <div className="bg-[#FF4500] rounded-2xl px-4 py-3">
-          <div className="flex items-center space-x-1">
-            <span className="text-white text-sm break-words">Astra is gathering information from the company meetings, documents, financials, latest news and more as needed</span>
-            <div className="flex space-x-1 ml-2">
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Chat Message Component
-interface ChatMessageProps {
-  message: string;
-  isUser: boolean;
-  timestamp: Date;
-  isInitialResponse?: boolean;
-  messageId: string;
-  hasVisualization?: boolean;
-  onMarkAsVisualized?: (messageId: string) => void;
-  getCachedVisualization?: (messageId: string) => string | undefined;
-}
-
-const ChatMessage: React.FC<ChatMessageProps> = ({ 
-  message, 
-  isUser, 
-  timestamp, 
-  isInitialResponse = false, 
-  messageId, 
-  hasVisualization, 
-  onMarkAsVisualized, 
-  getCachedVisualization 
-}) => {
+const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualization }) => {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [visualizationHtml, setVisualizationHtml] = useState<string>('');
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
+
+  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate visualization based on content analysis
+    const htmlContent = generateMockVisualization(content, type);
+    return htmlContent;
   };
 
-  const formatMessage = (text: string) => {
-    if (!isUser) {
-      let cleanText = text;
-      
-      cleanText = cleanText.replace(/\\n/g, '\n');
-      cleanText = cleanText.replace(/\\(\*)/g, '$1');
-      
-      return cleanText;
-    }
-    return text;
-  };
-
-  const openVisualization = (type: 'quick' | 'detailed') => {
-    const formattedMessage = formatMessage(message);
+  const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
+    // Analyze content for keywords to determine chart type
+    const lowerContent = content.toLowerCase();
+    const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
+    const hasGrowth = lowerContent.includes('growth') || lowerContent.includes('increase') || lowerContent.includes('trend');
+    const hasComparison = lowerContent.includes('vs') || lowerContent.includes('compare') || lowerContent.includes('versus');
+    const hasTime = lowerContent.includes('year') || lowerContent.includes('month') || lowerContent.includes('quarter');
     
-    if (onMarkAsVisualized) {
-      onMarkAsVisualized(messageId);
-    }
+    let chartType = 'bar';
+    let chartData = '';
+    let title = 'Data Analysis';
+    let metrics = '';
     
-    const cachedVisualization = getCachedVisualization ? getCachedVisualization(messageId) : undefined;
-    
-    if (cachedVisualization) {
-      navigate('/visualization', { 
-        state: { 
-          messageContent: formattedMessage,
-          visualizationType: type,
-          cachedVisualization: cachedVisualization,
-          messageId: messageId
-        } 
-      });
-    } else {
-      navigate('/visualization', { 
-        state: { 
-          messageContent: formattedMessage,
-          visualizationType: type,
-          messageId: messageId
-        } 
-      });
-    }
-  };
-
-  const shouldTruncate = !isUser && formatMessage(message).split('\n').length > 10;
-  const messageLines = formatMessage(message).split('\n');
-  const displayLines = shouldTruncate && !isExpanded ? messageLines.slice(0, 10) : messageLines;
-  const displayMessage = displayLines.join('\n');
-
-  return (
-    <div className={`flex items-start space-x-2 sm:space-x-3 mb-4 sm:mb-6 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-        isUser ? 'bg-blue-600' : 'bg-[#FF4500]'
-      }`}>
-        {isUser ? (
-          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-        ) : (
-          <Rocket className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-        )}
-      </div>
-
-      <div className={`max-w-[280px] sm:max-w-md lg:max-w-lg xl:max-w-xl ${isUser ? 'ml-auto' : 'mr-auto'}`}>
-        <div className={`rounded-2xl px-4 py-3 ${
-          isUser ? 'bg-blue-600 text-white' : 'bg-[#FF4500] text-white'
-        }`}>
-          <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
-            {displayMessage.split('\n').map((line, index, array) => {
-              const formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-              
-              return (
-                <span key={index}>
-                  <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-                  {index < array.length - 1 && <br />}
-                </span>
-              );
-            })}
-          </div>
-          
-          {shouldTruncate && (
-            <div className="mt-2 sm:mt-3 pt-2 border-t border-white/20">
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center space-x-1 sm:space-x-2 text-white/80 hover:text-white transition-colors text-sm"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>Show Less</span>
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span>Show More</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-          
-          {!isUser && !isInitialResponse && (
-            <div className={`mt-2 sm:mt-3 pt-2 ${shouldTruncate ? '' : 'border-t border-white/20'}`}>
-              <button
-                onClick={() => openVisualization('quick')}
-                className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium px-2 sm:px-3 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm w-full sm:w-auto justify-center"
-              >
-                <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span>{hasVisualization ? 'View Visualization' : 'Create Visualization'}</span>
-              </button>
-            </div>
-          )}
+    if (hasRevenue && hasTime) {
+      chartType = 'line';
+      title = 'Revenue Growth Analysis';
+      chartData = `
+        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'],
+        datasets: [{
+          label: 'Revenue ($M)',
+          data: [12, 19, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.1)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Total Revenue</h3>
+          <p>$133M</p>
         </div>
-        <p className="text-xs text-gray-400 mt-1 px-1 sm:px-2">
-          {formatTime(timestamp)}
-        </p>
-      </div>
+        <div class="metric">
+          <h3>Growth Rate</h3>
+          <p>275%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg. Quarterly</h3>
+          <p>$26.6M</p>
+        </div>`;
+    } else if (hasComparison) {
+      chartType = 'bar';
+      title = 'Comparative Analysis';
+      chartData = `
+        labels: ['Product A', 'Product B', 'Product C', 'Product D'],
+        datasets: [{
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Total Items</h3>
+          <p>100</p>
+        </div>
+        <div class="metric">
+          <h3>Categories</h3>
+          <p>4</p>
+        </div>
+        <div class="metric">
+          <h3>Top Category</h3>
+          <p>Category A</p>
+        </div>`;
+    }
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        h1 { color: #333; text-align: center; }
+        .metric { 
+            display: inline-block; 
+            margin: 10px; 
+            padding: 15px; 
+            background: #FF4500; 
+            color: white; 
+            border-radius: 8px; 
+            text-align: center;
+        }
+        .metric h3 { margin: 0 0 5px 0; font-size: 14px; }
+        .metric p { margin: 0; font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 ${title}</h1>
+        <div class="metrics">
+            ${metrics}
+        </div>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
     </div>
-  );
-};
-
-// Chat Container Component
-interface ChatContainerProps {
-  messages: Message[];
-  isLoading: boolean;
-  isMessageVisualized: (messageId: string) => boolean;
-  onMarkAsVisualized: (messageId: string) => void;
-  cacheVisualization: (messageId: string, htmlContent: string) => void;
-  getCachedVisualization: (messageId: string) => string | undefined;
-}
-
-const ChatContainer: React.FC<ChatContainerProps> = ({ 
-  messages, 
-  isLoading, 
-  isMessageVisualized, 
-  onMarkAsVisualized, 
-  cacheVisualization, 
-  getCachedVisualization 
-}) => {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    <script>
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+            type: '${chartType}',
+            data: {
+                ${chartData}
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '${title}'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>`;
+      
+      console.log('Generated HTML length:', htmlContent.length);
+      return htmlContent;
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+    const loadVisualization = async () => {
+      console.log('🔄 Starting visualization load...');
+      
+      if (!messageContent) {
+        console.log('❌ No message content provided');
+        setError('No message content provided');
+        setIsLoading(false);
+        return;
+      }
 
-  return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] px-3 sm:px-6 py-4 sm:py-6">
-      <div className="max-w-4xl mx-auto">
-        {messages.length === 0 && (
-          <div className="text-center py-8 sm:py-12 px-4">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#FF4500] rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-xl sm:text-2xl">🚀</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-white mb-2">Welcome to Astra AI</h2>
-            <p className="text-sm sm:text-base text-gray-400">RocketHub's Company Intelligence Agent</p>
-          </div>
-        )}
+      // Check if we have cached visualization
+      if (cachedVisualization) {
+        console.log('✅ Using cached visualization');
+        setVisualizationHtml(cachedVisualization);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        console.log('🔄 Setting loading to true');
+        setIsLoading(true);
+        setError(null);
         
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message.text}
-            isUser={message.isUser}
-            timestamp={message.timestamp}
-            isInitialResponse={message.isInitialResponse}
-            messageId={message.id}
-            hasVisualization={isMessageVisualized(message.id)}
-            onMarkAsVisualized={onMarkAsVisualized}
-            getCachedVisualization={getCachedVisualization}
-          />
-        ))}
+        console.log('🚀 Generating visualization...');
+        const html = await generateVisualization(messageContent, visualizationType || 'quick');
+        console.log('✅ Visualization generated, setting HTML...');
+        setVisualizationHtml(html);
         
-        {isLoading && <TypingIndicator />}
+        // Cache the visualization
+        if (cacheVisualization && messageId) {
+          console.log('💾 Caching visualization...');
+          cacheVisualization(messageId, html);
+        }
         
-        <div ref={messagesEndRef} />
-      </div>
-    </div>
-  );
-};
+        console.log('✅ Visualization set successfully, clearing loading state');
+      } catch (err) {
+        console.error('Visualization generation error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to generate visualization');
+      } finally {
+        console.log('🔄 Setting loading to false');
+        setIsLoading(false);
+      }
+    };
 
-// Message Input Component
-interface MessageInputProps {
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  error: string | null;
-  onRetry: () => void;
-}
+    loadVisualization();
+  }, [messageContent, visualizationType, cachedVisualization, messageId, cacheVisualization]);
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, error, onRetry }) => {
-  const [message, setMessage] = useState('');
-
-  const handleSend = () => {
-    if (message.trim() && !isLoading) {
-      onSendMessage(message.trim());
-      setMessage('');
-    }
+  const handleGoBack = () => {
+    navigate('/');
   };
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const handleRetry = () => {
+    setError(null);
+    setVisualizationHtml('');
+    setIsLoading(true);
+    
+    // Retry generation
+    setTimeout(async () => {
+      try {
+        const html = await generateVisualization(messageContent, visualizationType || 'quick');
+        setVisualizationHtml(html);
+        
+        if (cacheVisualization && messageId) {
+          cacheVisualization(messageId, html);
+        }
+      } catch (err) {
+        console.error('Retry error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to generate visualization');
+      } finally {
+        setIsLoading(false);
+      }
+    }, 500);
   };
 
-  return (
-    <div className="border-t border-gray-700 bg-[#1a1a2e] px-3 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50">
-      {error && (
-        <div className="mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-3 sm:px-4 py-2 space-y-2 sm:space-y-0">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 text-red-400" />
-            <span className="text-red-400 text-sm">{error}</span>
-          </div>
+  if (!messageContent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex items-center justify-center">
+        <div className="text-center text-white">
+          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <p className="text-lg mb-4">No visualization data available</p>
           <button
-            onClick={onRetry}
-            className="flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors"
+            onClick={handleGoBack}
+            className="bg-[#FF4500] hover:bg-[#FF6B35] text-white px-6 py-3 rounded-lg transition-colors"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span className="text-sm">Retry</span>
+            Go Back
           </button>
         </div>
-      )}
-      
-      <div className="flex items-end space-x-2 sm:space-x-3">
-        <div className="flex-1 relative">
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message to Astra..."
-            disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-3 sm:px-4 py-3 pr-12 text-sm sm:text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            rows={1}
-            style={{ minHeight: '44px', maxHeight: '100px' }}
-          />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-6 py-4 sticky top-0 z-50">
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={handleGoBack}
+            className="w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="w-6 h-6 text-[#FF4500]" />
+            <h1 className="text-xl font-bold text-white">Data Visualization</h1>
+          </div>
         </div>
-        
-        <button
-          onClick={handleSend}
-          disabled={!message.trim() || isLoading}
-          className="w-10 h-10 sm:w-12 sm:h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
-        >
-          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 p-6">
+        <div className="max-w-6xl mx-auto">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 text-[#FF4500] animate-spin mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">Generating Visualization</h2>
+              <p className="text-gray-400 text-center max-w-md">
+                Using AI to analyze your data and create interactive charts...
+              </p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Visualization Error</h2>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">{error}</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleRetry}
+                  className="flex items-center space-x-2 bg-[#FF4500] hover:bg-[#FF6B35] text-white px-6 py-3 rounded-lg transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Retry</span>
+                </button>
+                <button
+                  onClick={handleGoBack}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+                >
+                  Go Back to Chat
+                </button>
+              </div>
+            </div>
+          ) : visualizationHtml ? (
+            <div className="space-y-6">
+              {/* Visualization Container */}
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <iframe
+                  srcDoc={visualizationHtml}
+                  className="w-full h-[600px] border-0"
+                  title="Data Visualization"
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleGoBack}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                >
+                  Back to Chat
+                </button>
+                <button
+                  onClick={() => {
+                    // Create a blob URL for the HTML content
+                    const blob = new Blob([visualizationHtml], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'astra-visualization.html';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="flex-1 bg-[#FF4500] hover:bg-[#FF6B35] text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                >
+                  Download Visualization
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
 };
 
-// Main App Component
-function App() {
-  const { messages, isLoading, error, sendMessage, retryLastMessage, markMessageAsVisualized, isMessageVisualized, cacheVisualization, getCachedVisualization } = useChat();
-
-  return (
-    <Routes>
-      <Route path="/" element={
-        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col pb-16 sm:pb-20">
-          <Header />
-          <ChatContainer 
-            messages={messages} 
-            isLoading={isLoading}
-            isMessageVisualized={isMessageVisualized}
-            onMarkAsVisualized={markMessageAsVisualized}
-            cacheVisualization={cacheVisualization}
-            getCachedVisualization={getCachedVisualization}
-          />
-          <MessageInput 
-            onSendMessage={sendMessage}
-            isLoading={isLoading}
-            error={error}
-            onRetry={retryLastMessage}
-          />
-        </div>
-      } />
-      <Route path="/visualization" element={<VisualizationPage cacheVisualization={cacheVisualization} />} />
-    </Routes>
-  );
-}
-
-export default App;
+export default VisualizationPage;
