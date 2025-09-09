@@ -189,7 +189,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       if (!response.ok) {
         const errorData = await response.text();
         console.error('❌ API Error:', errorData);
-        throw new Error(`Gemini API error: ${response.status} - ${errorData}`);
+        throw new Error(\`Gemini API error: ${response.status} - ${errorData}`);
       }
 
       const data = await response.json();
@@ -344,3 +344,5 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
         </div>`;
     }
+  }
+}
