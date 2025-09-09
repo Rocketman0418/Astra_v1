@@ -236,48 +236,7 @@ function ChatApp() {
                 {!message.isUser && message.text.length > 100 && (
                   <button
                     style={{
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      padding: '10px 16px',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      marginTop: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      minHeight: '40px'
-                    }}
-                    onClick={() => createVisualization(message.text)}
-                  >
-                    📊 Create Visualization
-                  </button>
-                )}
-                
-                {!message.isUser && shouldTruncate(message.text) && (
-                  <button
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: '14px',
-                      textDecoration: 'underline',
-                      cursor: 'pointer',
-                      marginTop: '8px',
-                      padding: '4px 0',
-                      minHeight: '32px'
-                    }}
-                    onClick={() => toggleMessageExpansion(message.id)}
-                  >
-                    {message.isExpanded ? 'Show Less' : 'Show More'}
-                  </button>
-                )}
-                
-                {!message.isUser && message.text.length > 100 && (
-                  <button
-                    style={{
-                      backgroundColor: '#10b981',
+                      backgroundColor: '#3b82f6',
                       color: 'white',
                       border: 'none',
                       borderRadius: '12px',
