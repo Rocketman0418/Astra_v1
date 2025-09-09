@@ -177,6 +177,8 @@ const useChat = () => {
     cacheVisualization,
     getCachedVisualization
   };
+};
+
 // Typing Indicator Component
 const TypingIndicator: React.FC = () => {
   return (
