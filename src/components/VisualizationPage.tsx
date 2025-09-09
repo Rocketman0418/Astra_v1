@@ -12,20 +12,99 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visualizationHtml, setVisualizationHtml] = useState<string>('');
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
-  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const generateVisualizationWithGemini = async (content: string): Promise<string> => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     
-    // Generate visualization based on content analysis
-    const htmlContent = generateMockVisualization(content, type);
-    return htmlContent;
+    console.log('🔑 API Key check:', {
+      hasApiKey: !!apiKey,
+      keyLength: apiKey ? apiKey.length : 0,
+      keyStart: apiKey ? apiKey.substring(0, 10) + '...' : 'N/A'
+    });
+
+    if (!apiKey) {
+      console.log('❌ No Gemini API key found, falling back to mock');
+      throw new Error('No API key available');
+    }
+
+    const prompt = `Create a comprehensive HTML visualization dashboard based on this business data:
+
+"${content}"
+
+Requirements:
+1. Create a complete HTML page with embedded CSS and JavaScript
+2. Use Chart.js for interactive charts (load from CDN)
+3. Include multiple relevant visualizations (charts, metrics, KPIs)
+4. Use professional styling with gradients and modern design
+5. Make it responsive and visually appealing
+6. Include RocketHub branding colors (#FF4500 orange theme)
+7. Add meaningful titles, labels, and descriptions
+8. Include at least 3-5 key metrics as cards
+9. Use appropriate chart types based on the data (line, bar, pie, etc.)
+10. Make the data realistic and relevant to the content
+
+Return ONLY the complete HTML code, no explanations or markdown.`;
+
+    console.log('🚀 Making Gemini API request...');
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          }
+        })
+      });
+
+      console.log('📡 API Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', errorText);
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('📊 API Response received, processing...');
+
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const htmlContent = data.candidates[0].content.parts[0].text;
+        console.log('✅ Generated HTML length:', htmlContent.length);
+        
+        if (htmlContent.length < 1000) {
+          console.log('⚠️ HTML seems too short, falling back to mock');
+          throw new Error('Generated content too short');
+        }
+        
+        return htmlContent;
+      } else {
+        console.error('❌ Invalid API response structure:', data);
+        throw new Error('Invalid API response');
+      }
+    } catch (error) {
+      console.error('❌ Gemini API error:', error);
+      throw error;
+    }
   };
 
-  const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
-    // Analyze content for keywords to determine chart type
+  const generateMockVisualization = (content: string): string => {
+    console.log('🎭 Using mock visualization fallback');
+    
     const lowerContent = content.toLowerCase();
     const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
     const hasGrowth = lowerContent.includes('growth') || lowerContent.includes('increase') || lowerContent.includes('trend');
@@ -115,7 +194,6 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           <p>Upward</p>
         </div>`;
     } else {
-      // Default dashboard
       chartType = 'doughnut';
       title = 'Data Overview';
       chartData = `
@@ -215,11 +293,24 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 </body>
 </html>`;
       
-      console.log('Generated HTML length:', htmlContent.length);
-      return htmlContent;
+    console.log('🎭 Mock HTML length:', htmlContent.length);
+    return htmlContent;
+  };
+
+  const generateVisualization = async (content: string): Promise<string> => {
+    try {
+      // Try Gemini first
+      return await generateVisualizationWithGemini(content);
+    } catch (error) {
+      console.log('⚠️ Gemini failed, falling back to mock:', error);
+      // Fall back to mock visualization
+      return generateMockVisualization(content);
+    }
   };
 
   useEffect(() => {
+    if (hasInitialized) return;
+
     const loadVisualization = async () => {
       console.log('🔄 Starting visualization load...');
       
@@ -227,6 +318,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('❌ No message content provided');
         setError('No message content provided');
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
@@ -235,6 +327,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
@@ -244,7 +337,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         setError(null);
         
         console.log('🚀 Generating visualization...');
-        const html = await generateVisualization(messageContent, visualizationType || 'quick');
+        const html = await generateVisualization(messageContent);
         console.log('✅ Visualization generated, setting HTML...');
         setVisualizationHtml(html);
         
@@ -261,11 +354,12 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       } finally {
         console.log('🔄 Setting loading to false');
         setIsLoading(false);
+        setHasInitialized(true);
       }
     };
 
     loadVisualization();
-  }, [messageContent, visualizationType, cachedVisualization, messageId, cacheVisualization]);
+  }, [hasInitialized, messageContent, cachedVisualization, messageId, cacheVisualization]);
 
   const handleGoBack = () => {
     navigate('/');
@@ -275,23 +369,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
-    
-    // Retry generation
-    setTimeout(async () => {
-      try {
-        const html = await generateVisualization(messageContent, visualizationType || 'quick');
-        setVisualizationHtml(html);
-        
-        if (cacheVisualization && messageId) {
-          cacheVisualization(messageId, html);
-        }
-      } catch (err) {
-        console.error('Retry error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to generate visualization');
-      } finally {
-        setIsLoading(false);
-      }
-    }, 500);
+    setHasInitialized(false); // Reset to allow re-execution
   };
 
   if (!messageContent) {
