@@ -333,7 +333,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         )}
       </div>
 
-      <div className={`max-w-[calc(100vw-80px)] sm:max-w-md lg:max-w-lg xl:max-w-xl ${isUser ? 'ml-auto' : 'mr-auto'}`}>
+      <div className={`max-w-[calc(100vw-100px)] sm:max-w-md lg:max-w-lg xl:max-w-xl ${isUser ? 'ml-auto' : 'mr-auto'}`}>
         <div className={`rounded-2xl px-4 py-3 ${
           isUser ? 'bg-blue-600 text-white' : 'bg-[#FF4500] text-white'
         }`}>
@@ -482,10 +482,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
   return (
     <div className="border-t border-gray-700 bg-[#1a1a2e] px-3 sm:px-6 py-3 sm:py-4 sticky bottom-0 z-50 safe-area-inset-bottom w-full">
       {error && (
-        <div className="mb-3 flex flex-col items-start justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-3 space-y-2">
+        <div className="mb-3 flex flex-col items-start justify-between bg-red-900/20 border border-red-500/30 rounded-lg px-2 py-2 space-y-2 max-w-full">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 text-red-400" />
-            <span className="text-red-400 text-sm leading-relaxed">{error}</span>
+            <span className="text-red-400 text-sm leading-relaxed break-words">{error}</span>
           </div>
           <button
             onClick={onRetry}
@@ -497,7 +497,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         </div>
       )}
       
-      <div className="flex items-end space-x-2 sm:space-x-3 w-full">
+      <div className="flex items-end space-x-1 sm:space-x-3 w-full max-w-full">
         <div className="flex-1 relative">
           <textarea
             value={message}
@@ -505,7 +505,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
             onKeyPress={handleKeyPress}
             placeholder="Type your message to Astra..."
             disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-3 sm:px-4 py-3 sm:py-4 text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] max-h-[120px]"
+            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-2 sm:px-4 py-2 sm:py-4 text-base text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[120px] box-border"
             rows={1}
           />
         </div>
@@ -513,9 +513,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         <button
           onClick={handleSend}
           disabled={!message.trim() || isLoading}
-          className="w-12 h-12 sm:w-12 sm:h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
+          className="w-10 h-10 sm:w-12 sm:h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none flex-shrink-0"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
     </div>

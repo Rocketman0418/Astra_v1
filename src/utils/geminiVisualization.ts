@@ -140,83 +140,91 @@ export const detectContentType = (content: string): 'financial' | 'meeting' | 'g
 
 export const callGeminiAPI = async (prompt: string, apiKey: string, model: string = GEMINI_CONFIG.model): Promise<string> => {
   if (!apiKey || apiKey.trim() === '' || apiKey === 'undefined') {
-    throw new Error('Gemini API key not configured. The visualization feature requires a Google AI Studio API key. Please contact your administrator to configure the VITE_GEMINI_API_KEY environment variable.');
+    console.error('❌ No API key available, using fallback');
+    throw new Error('API_KEY_MISSING');
   }
 
-  console.log('🔑 Gemini API Call Debug:', {
+  console.log('🔑 Mobile Gemini API Call Debug:', {
     hasApiKey: !!apiKey,
     apiKeyLength: apiKey ? apiKey.length : 0,
     apiKeyStart: apiKey ? apiKey.substring(0, 10) : 'N/A',
     model: model,
-    environment: import.meta.env.MODE
+    environment: import.meta.env.MODE,
+    userAgent: navigator.userAgent,
+    isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   });
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{
-          text: prompt
-        }]
-      }],
-      generationConfig: {
-        temperature: 0.3,
-        topK: 40,
-        topP: 0.95,
-      }
-    })
-  });
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.3,
+          topK: 40,
+          topP: 0.95,
+        }
+      })
+    });
 
-  if (!response.ok) {
-    console.error('❌ Gemini API HTTP Error:', response.status, response.statusText);
-    throw new Error(`Gemini API error: ${response.status} - ${response.statusText}`);
-  }
+    if (!response.ok) {
+      console.error('❌ Mobile Gemini API HTTP Error:', response.status, response.statusText);
+      throw new Error(`GEMINI_HTTP_ERROR: ${response.status}`);
+    }
 
-  const data = await response.json();
-  
-  // Log the full response for debugging
-  console.log('✅ Gemini API Response received:', {
-    hasCandidates: !!data.candidates,
-    candidatesLength: data.candidates?.length || 0,
-    hasError: !!data.error
-  });
-  
-  // Check for error in response
-  if (data.error) {
-    console.error('❌ Gemini API Response Error:', data.error);
-    throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
-  }
-  
-  // Check if candidates array exists and has content
-  if (!data.candidates || data.candidates.length === 0) {
-    console.error('❌ No candidates in Gemini response');
-    throw new Error('No candidates returned from Gemini API. This may be due to safety filters or prompt complexity.');
-  }
-  
-  const candidate = data.candidates[0];
-  
-  // Check if candidate was blocked by safety filters
-  if (candidate.finishReason === 'SAFETY') {
-    console.error('❌ Content blocked by safety filters');
-    throw new Error('Content was blocked by Gemini safety filters. Try simplifying your request.');
-  }
-  
-  // Check if response was truncated due to token limit
-  if (candidate.finishReason === 'MAX_TOKENS') {
-    console.error('❌ Response truncated due to token limit');
-    throw new Error('The visualization was too complex and exceeded the token limit. Please try the Quick visualization instead, or ask for a simpler analysis.');
-  }
-  
-  if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
-    console.error('❌ Invalid response structure:', candidate);
-    throw new Error(`Invalid response structure from Gemini API. Finish reason: ${candidate.finishReason || 'unknown'}`);
-  }
+    const data = await response.json();
+    
+    // Log the full response for debugging
+    console.log('✅ Mobile Gemini API Response received:', {
+      hasCandidates: !!data.candidates,
+      candidatesLength: data.candidates?.length || 0,
+      hasError: !!data.error
+    });
+    
+    // Check for error in response
+    if (data.error) {
+      console.error('❌ Mobile Gemini API Response Error:', data.error);
+      throw new Error(`GEMINI_RESPONSE_ERROR: ${data.error.message || 'Unknown error'}`);
+    }
+    
+    // Check if candidates array exists and has content
+    if (!data.candidates || data.candidates.length === 0) {
+      console.error('❌ No candidates in mobile Gemini response');
+      throw new Error('GEMINI_NO_CANDIDATES');
+    }
+    
+    const candidate = data.candidates[0];
+    
+    // Check if candidate was blocked by safety filters
+    if (candidate.finishReason === 'SAFETY') {
+      console.error('❌ Mobile content blocked by safety filters');
+      throw new Error('GEMINI_SAFETY_FILTER');
+    }
+    
+    // Check if response was truncated due to token limit
+    if (candidate.finishReason === 'MAX_TOKENS') {
+      console.error('❌ Mobile response truncated due to token limit');
+      throw new Error('GEMINI_MAX_TOKENS');
+    }
+    
+    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+      console.error('❌ Invalid mobile response structure:', candidate);
+      throw new Error(`GEMINI_INVALID_STRUCTURE: ${candidate.finishReason || 'unknown'}`);
+    }
 
-  console.log('✅ Gemini API call successful, returning content');
-  return candidate.content.parts[0].text;
+    console.log('✅ Mobile Gemini API call successful, returning content');
+    return candidate.content.parts[0].text;
+  } catch (error) {
+    console.error('❌ Mobile Gemini API fetch error:', error);
+    throw error;
+  }
 };
 
 // Fallback visualization generator for when API is not available
