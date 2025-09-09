@@ -15,6 +15,8 @@ function ChatApp() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showVisualizationModal, setShowVisualizationModal] = useState(false);
+  const [visualizationText, setVisualizationText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const toggleMessageExpansion = (messageId: string) => {
@@ -26,7 +28,8 @@ function ChatApp() {
   };
 
   const createVisualization = (messageText: string) => {
-    alert('Visualization feature coming soon!\n\nThis would create a chart based on:\n' + messageText.substring(0, 100) + '...');
+    setVisualizationText(messageText);
+    setShowVisualizationModal(true);
   };
 
   const shouldTruncate = (text: string) => text.length > 300;
@@ -297,6 +300,73 @@ function ChatApp() {
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Visualization Modal */}
+      {showVisualizationModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#334155',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '100%',
+            color: 'white'
+          }}>
+            <h3 style={{
+              fontSize: '20px',
+              fontWeight: 'bold',
+              marginBottom: '16px',
+              textAlign: 'center'
+            }}>
+              📊 Visualization Feature
+            </h3>
+            <p style={{
+              fontSize: '16px',
+              lineHeight: '1.5',
+              marginBottom: '16px',
+              color: '#94a3b8'
+            }}>
+              Visualization feature coming soon!
+            </p>
+            <p style={{
+              fontSize: '14px',
+              lineHeight: '1.4',
+              marginBottom: '20px',
+              color: '#cbd5e1'
+            }}>
+              This would create a chart based on: {visualizationText.substring(0, 100)}...
+            </p>
+            <button
+              onClick={() => setShowVisualizationModal(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input Area */}
       <div style={{
