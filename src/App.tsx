@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
-// Simple mobile-first app with no external dependencies
 const WEBHOOK_URL = 'https://healthrocket.app.n8n.cloud/webhook/8ec404be-7f51-47c8-8faf-0d139bd4c5e9/chat';
 
 interface Message {
@@ -11,182 +10,6 @@ interface Message {
   timestamp: Date;
   isExpanded?: boolean;
 }
-
-// Inline styles for mobile-first design
-const styles = {
-  app: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    height: '100vh',
-    width: '100%',
-    maxWidth: '100%',
-    backgroundColor: '#1e293b',
-    color: 'white',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    overflow: 'hidden'
-  },
-  header: {
-    backgroundColor: '#334155',
-    padding: '12px',
-    textAlign: 'center' as const,
-    borderBottom: '1px solid #475569',
-    flexShrink: 0
-  },
-  headerContent: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px'
-  },
-  logo: {
-    width: '24px',
-    height: '24px',
-    backgroundColor: '#f97316',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px'
-  },
-  title: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    margin: 0
-  },
-  chatArea: {
-    flex: 1,
-    overflowY: 'auto' as const,
-    padding: '16px',
-    maxWidth: '100%'
-  },
-  welcome: {
-    textAlign: 'center' as const,
-    padding: '40px 20px'
-  },
-  welcomeIcon: {
-    width: '60px',
-    height: '60px',
-    backgroundColor: '#f97316',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 16px',
-    fontSize: '24px'
-  },
-  message: {
-    display: 'flex',
-    marginBottom: '16px',
-    gap: '8px',
-    maxWidth: '100%'
-  },
-  userMessage: {
-    flexDirection: 'row-reverse' as const
-  },
-  avatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    fontSize: '14px'
-  },
-  userAvatar: {
-    backgroundColor: '#3b82f6'
-  },
-  botAvatar: {
-    backgroundColor: '#f97316'
-  },
-  bubble: {
-    padding: '12px 16px',
-    borderRadius: '16px',
-    maxWidth: '250px',
-    wordWrap: 'break-word' as const,
-    fontSize: '16px',
-    lineHeight: '1.5',
-    position: 'relative' as const
-  },
-  userBubble: {
-    backgroundColor: '#3b82f6',
-    color: 'white'
-  },
-  botBubble: {
-    backgroundColor: '#f97316',
-    color: 'white'
-  },
-  showMoreButton: {
-    background: 'none',
-    border: 'none',
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '14px',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    marginTop: '8px',
-    padding: '4px 0'
-  },
-  visualizationButton: {
-    backgroundColor: '#10b981',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    padding: '8px 16px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    marginTop: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  inputArea: {
-    padding: '16px',
-    backgroundColor: '#334155',
-    borderTop: '1px solid #475569',
-    flexShrink: 0
-  },
-  inputContainer: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'flex-end'
-  },
-  input: {
-    flex: 1,
-    padding: '12px 16px',
-    borderRadius: '20px',
-    border: '1px solid #64748b',
-    backgroundColor: '#475569',
-    color: 'white',
-    fontSize: '16px',
-    outline: 'none',
-    resize: 'none' as const,
-    minHeight: '44px',
-    maxHeight: '100px'
-  },
-  sendButton: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: '#f97316',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    fontSize: '16px'
-  },
-  typing: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '12px 16px',
-    backgroundColor: '#f97316',
-    borderRadius: '16px',
-    maxWidth: '200px',
-    color: 'white'
-  }
-};
 
 function ChatApp() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -203,12 +26,10 @@ function ChatApp() {
   };
 
   const createVisualization = (messageText: string) => {
-    // For now, just show an alert - you can implement actual visualization logic
     alert('Visualization feature coming soon!\n\nThis would create a chart based on:\n' + messageText.substring(0, 100) + '...');
   };
 
   const shouldTruncate = (text: string) => text.length > 300;
-  
   const getTruncatedText = (text: string) => text.substring(0, 300) + '...';
 
   const scrollToBottom = () => {
@@ -275,41 +96,116 @@ function ChatApp() {
   };
 
   return (
-    <div style={styles.app}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      width: '100%',
+      maxWidth: '100%',
+      backgroundColor: '#1e293b',
+      color: 'white',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      overflow: 'hidden'
+    }}>
       {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={styles.logo}>🚀</div>
-          <h1 style={styles.title}>Astra AI</h1>
+      <header style={{
+        backgroundColor: '#334155',
+        padding: '16px',
+        textAlign: 'center',
+        borderBottom: '1px solid #475569',
+        flexShrink: 0
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px'
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            backgroundColor: '#f97316',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px'
+          }}>
+            🚀
+          </div>
+          <h1 style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            margin: 0
+          }}>
+            Astra AI
+          </h1>
         </div>
       </header>
 
       {/* Chat Area */}
-      <div style={styles.chatArea}>
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '16px',
+        maxWidth: '100%'
+      }}>
         {messages.length === 0 ? (
-          <div style={styles.welcome}>
-            <div style={styles.welcomeIcon}>🚀</div>
-            <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Welcome to Astra AI</h2>
-            <p style={{ color: '#94a3b8', fontSize: '14px' }}>RocketHub's Company Intelligence Agent</p>
+          <div style={{
+            textAlign: 'center',
+            padding: '60px 20px'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              backgroundColor: '#f97316',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              fontSize: '32px'
+            }}>
+              🚀
+            </div>
+            <h2 style={{ fontSize: '24px', marginBottom: '12px' }}>Welcome to Astra AI</h2>
+            <p style={{ color: '#94a3b8', fontSize: '16px' }}>RocketHub's Company Intelligence Agent</p>
           </div>
         ) : (
           messages.map((message) => (
             <div 
               key={message.id} 
               style={{
-                ...styles.message,
-                ...(message.isUser ? styles.userMessage : {})
+                display: 'flex',
+                marginBottom: '20px',
+                gap: '12px',
+                maxWidth: '100%',
+                flexDirection: message.isUser ? 'row-reverse' : 'row'
               }}
             >
               <div style={{
-                ...styles.avatar,
-                ...(message.isUser ? styles.userAvatar : styles.botAvatar)
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                fontSize: '16px',
+                backgroundColor: message.isUser ? '#3b82f6' : '#f97316'
               }}>
                 {message.isUser ? '👤' : '🚀'}
               </div>
               <div style={{
-                ...styles.bubble,
-                ...(message.isUser ? styles.userBubble : styles.botBubble)
+                padding: '14px 18px',
+                borderRadius: '18px',
+                maxWidth: '280px',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                fontSize: '16px',
+                lineHeight: '1.5',
+                backgroundColor: message.isUser ? '#3b82f6' : '#f97316',
+                color: 'white'
               }}>
                 <div>
                   {!message.isUser && shouldTruncate(message.text) && !message.isExpanded
@@ -320,7 +216,17 @@ function ChatApp() {
                 
                 {!message.isUser && shouldTruncate(message.text) && (
                   <button
-                    style={styles.showMoreButton}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '14px',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      marginTop: '8px',
+                      padding: '4px 0',
+                      minHeight: '32px'
+                    }}
                     onClick={() => toggleMessageExpansion(message.id)}
                   >
                     {message.isExpanded ? 'Show Less' : 'Show More'}
@@ -329,7 +235,20 @@ function ChatApp() {
                 
                 {!message.isUser && message.text.length > 100 && (
                   <button
-                    style={styles.visualizationButton}
+                    style={{
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '10px 16px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      marginTop: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      minHeight: '40px'
+                    }}
                     onClick={() => createVisualization(message.text)}
                   >
                     📊 Create Visualization
@@ -341,10 +260,37 @@ function ChatApp() {
         )}
 
         {isLoading && (
-          <div style={styles.message}>
-            <div style={styles.botAvatar}>🚀</div>
-            <div style={styles.typing}>
-              <span style={{ fontSize: '16px' }}>Astra is thinking...</span>
+          <div style={{
+            display: 'flex',
+            marginBottom: '20px',
+            gap: '12px',
+            maxWidth: '100%'
+          }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              fontSize: '16px',
+              backgroundColor: '#f97316'
+            }}>
+              🚀
+            </div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '14px 18px',
+              backgroundColor: '#f97316',
+              borderRadius: '18px',
+              maxWidth: '200px',
+              color: 'white',
+              fontSize: '16px'
+            }}>
+              <span>Astra is thinking...</span>
             </div>
           </div>
         )}
@@ -353,14 +299,36 @@ function ChatApp() {
       </div>
 
       {/* Input Area */}
-      <div style={styles.inputArea}>
-        <div style={styles.inputContainer}>
+      <div style={{
+        padding: '16px',
+        backgroundColor: '#334155',
+        borderTop: '1px solid #475569',
+        flexShrink: 0
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'flex-end'
+        }}>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message to Astra..."
-            style={styles.input}
+            style={{
+              flex: 1,
+              padding: '14px 18px',
+              borderRadius: '22px',
+              border: '1px solid #64748b',
+              backgroundColor: '#475569',
+              color: 'white',
+              fontSize: '16px',
+              outline: 'none',
+              resize: 'none',
+              minHeight: '48px',
+              maxHeight: '120px',
+              fontFamily: 'inherit'
+            }}
             disabled={isLoading}
             rows={1}
           />
@@ -368,7 +336,17 @@ function ChatApp() {
             onClick={sendMessage}
             disabled={!inputText.trim() || isLoading}
             style={{
-              ...styles.sendButton,
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              border: 'none',
+              backgroundColor: '#f97316',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '18px',
               opacity: (!inputText.trim() || isLoading) ? 0.5 : 1
             }}
           >
