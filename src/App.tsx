@@ -114,15 +114,6 @@ const useChat = () => {
     setIsLoading(true);
 
     try {
-      // Check if API key is available
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      console.log('API Key check:', {
-        hasApiKey: !!apiKey,
-        apiKeyLength: apiKey ? apiKey.length : 0,
-        environment: import.meta.env.MODE,
-        allEnvVars: Object.keys(import.meta.env)
-      });
-      
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: {
@@ -190,25 +181,12 @@ const useChat = () => {
 // Header Component - Mobile First
 const Header: React.FC = () => {
   return (
-    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 p-2 sticky top-0 z-50 w-full">
-      <div className="flex items-center justify-center w-full">
-        <img 
-          src="/rockethub-logo.png" 
-          alt="RocketHub Logo" 
-          className="h-8 w-auto mr-2 flex-shrink-0"
-          onError={(e) => {
-            console.error('Logo failed to load:', e);
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 bg-[#FF4500] rounded-full flex items-center justify-center">
-            <span className="text-sm">🚀</span>
-          </div>
-          <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-bold text-sm">
-            Astra AI
-          </span>
+    <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
+      <div className="flex items-center justify-center space-x-2">
+        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+          <span className="text-lg">🚀</span>
         </div>
+        <h1 className="text-white font-bold text-lg">Astra AI</h1>
       </div>
     </header>
   );
@@ -217,18 +195,18 @@ const Header: React.FC = () => {
 // Typing Indicator Component
 const TypingIndicator: React.FC = () => {
   return (
-    <div className="flex items-start space-x-2 mb-4 px-2">
-      <div className="w-8 h-8 rounded-full bg-[#FF4500] flex items-center justify-center flex-shrink-0">
+    <div className="flex items-start space-x-3 mb-4 px-4">
+      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
         <Rocket className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1">
-        <div className="bg-[#FF4500] rounded-2xl px-3 py-2">
-          <div className="flex items-center space-x-1">
-            <span className="text-white text-sm">Astra is thinking</span>
-            <div className="flex space-x-1 ml-2">
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        <div className="bg-orange-500 rounded-2xl px-4 py-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-white">Astra is thinking</span>
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
           </div>
         </div>
@@ -306,14 +284,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const messageLines = formatMessage(message).split('\n');
-  const shouldTruncate = !isUser && messageLines.length > 5;
-  const displayLines = shouldTruncate && !isExpanded ? messageLines.slice(0, 5) : messageLines;
+  const shouldTruncate = !isUser && messageLines.length > 3; // Truncate after 3 lines on mobile
+  const displayLines = shouldTruncate && !isExpanded ? messageLines.slice(0, 3) : messageLines;
   const displayMessage = displayLines.join('\n');
 
   return (
-    <div className={`flex items-start space-x-2 mb-4 px-2 w-full ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div className={`flex items-start space-x-3 mb-4 px-4 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-        isUser ? 'bg-blue-600' : 'bg-[#FF4500]'
+        isUser ? 'bg-blue-600' : 'bg-orange-500'
       }`}>
         {isUser ? (
           <User className="w-4 h-4 text-white" />
@@ -323,8 +301,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className={`rounded-2xl px-3 py-2 ${
-          isUser ? 'bg-blue-600 text-white ml-auto max-w-[80%]' : 'bg-[#FF4500] text-white max-w-[90%]'
+        <div className={`rounded-2xl px-4 py-3 ${
+          isUser ? 'bg-blue-600 text-white ml-auto max-w-xs' : 'bg-orange-500 text-white max-w-sm'
         }`}>
           <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
             {displayMessage.split('\n').map((line, index, array) => {
@@ -361,7 +339,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
           
           {!isUser && !isInitialResponse && (
-            <div className="mt-2 pt-2 border-t border-white/20">
+            <div className="mt-3 pt-2 border-t border-white/20">
               <button
                 onClick={() => openVisualization('quick')}
                 className="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium px-3 py-2 rounded-lg transition-all duration-200 text-xs w-full"
@@ -409,11 +387,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, isLoading]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] py-4">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-800 py-4">
       <div className="w-full">
         {messages.length === 0 && (
           <div className="text-center py-12 px-4">
-            <div className="w-16 h-16 bg-[#FF4500] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🚀</span>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Welcome to Astra AI</h2>
@@ -469,9 +447,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
   };
 
   return (
-    <div className="border-t border-gray-700 bg-[#1a1a2e] p-3 sticky bottom-0 z-50 w-full">
+    <div className="border-t border-slate-700 bg-slate-900 p-4 sticky bottom-0 z-50">
       {error && (
-        <div className="mb-3 bg-red-900/20 border border-red-500/30 rounded-lg p-2">
+        <div className="mb-3 bg-red-900/20 border border-red-500/30 rounded-lg p-3">
           <div className="flex items-center space-x-2 mb-2">
             <AlertCircle className="w-4 h-4 text-red-400" />
             <span className="text-red-400 text-sm">{error}</span>
@@ -486,7 +464,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         </div>
       )}
       
-      <div className="flex items-end space-x-2 w-full">
+      <div className="flex items-end space-x-3">
         <div className="flex-1">
           <textarea
             value={message}
@@ -494,7 +472,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
             onKeyPress={handleKeyPress}
             placeholder="Type your message to Astra..."
             disabled={isLoading}
-            className="w-full bg-gray-800 border border-gray-600 rounded-2xl px-3 py-2 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[120px] text-base"
+            className="w-full bg-slate-800 border border-slate-600 rounded-2xl px-4 py-3 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[120px] text-base"
             rows={1}
           />
         </div>
@@ -502,7 +480,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
         <button
           onClick={handleSend}
           disabled={!message.trim() || isLoading}
-          className="w-12 h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
         >
           <Send className="w-5 h-5" />
         </button>
@@ -518,7 +496,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col w-full">
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
           <Header />
           <ChatContainer 
             messages={messages} 

@@ -111,10 +111,10 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col w-full">
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
         {/* Mobile Header */}
-        <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 p-2 sticky top-0 z-50 w-full">
-          <div className="flex items-center justify-between w-full">
+        <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
+          <div className="flex items-center justify-between">
             <button
               onClick={handleBack}
               className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
@@ -122,21 +122,19 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-[#FF4500] rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                 <span className="text-sm">🚀</span>
               </div>
-              <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-bold text-sm">
-                Astra AI
-              </span>
+              <span className="text-white font-bold text-sm">Astra AI</span>
             </div>
-            <div className="w-9"></div> {/* Spacer for centering */}
+            <div className="w-9"></div>
           </div>
         </header>
 
         {/* Loading Content */}
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="w-16 h-16 bg-[#FF4500] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <Loader2 className="w-8 h-8 text-white animate-spin" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
@@ -145,10 +143,10 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
             <p className="text-gray-400 mb-4">
               Creating your visualization...
             </p>
-            <div className="flex items-center justify-center space-x-2 text-[#FF4500]">
-              <div className="w-2 h-2 bg-[#FF4500] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-[#FF4500] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-[#FF4500] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="flex items-center justify-center space-x-2 text-orange-500">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
             </div>
           </div>
         </div>
@@ -158,10 +156,10 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col w-full">
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
         {/* Mobile Header */}
-        <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 p-2 sticky top-0 z-50 w-full">
-          <div className="flex items-center justify-between w-full">
+        <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
+          <div className="flex items-center justify-between">
             <button
               onClick={handleBack}
               className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
@@ -169,14 +167,12 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-[#FF4500] rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                 <span className="text-sm">🚀</span>
               </div>
-              <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-bold text-sm">
-                Astra AI
-              </span>
+              <span className="text-white font-bold text-sm">Astra AI</span>
             </div>
-            <div className="w-9"></div> {/* Spacer for centering */}
+            <div className="w-9"></div>
           </div>
         </header>
 
@@ -191,7 +187,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
             <div className="space-y-3">
               <button
                 onClick={handleRetry}
-                className="w-full bg-[#FF4500] text-white px-6 py-3 rounded-lg hover:bg-[#EA580C] transition-colors"
+                className="w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors"
               >
                 Try Again
               </button>
@@ -209,10 +205,10 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col w-full">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col">
       {/* Mobile Header */}
-      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 p-2 sticky top-0 z-50 w-full">
-        <div className="flex items-center justify-between w-full">
+      <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
+        <div className="flex items-center justify-between">
           <button
             onClick={handleBack}
             className="flex items-center text-gray-300 hover:text-white transition-colors p-2"
@@ -220,19 +216,17 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-[#FF4500] rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
               <span className="text-sm">🚀</span>
             </div>
-            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-bold text-sm">
-              Astra AI
-            </span>
+            <span className="text-white font-bold text-sm">Astra AI</span>
           </div>
-          <div className="w-9"></div> {/* Spacer for centering */}
+          <div className="w-9"></div>
         </div>
       </header>
 
       {/* Visualization Content */}
-      <div className="flex-1 w-full">
+      <div className="flex-1">
         {visualizationHTML ? (
           <iframe
             srcDoc={visualizationHTML}
