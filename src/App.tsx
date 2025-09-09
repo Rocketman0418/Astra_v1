@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { Routes, Route, BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import { Send, AlertCircle, RotateCcw, Rocket, User, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import Header from './components/Header';
 import VisualizationPage from './components/VisualizationPage';
 
 // Types
@@ -176,22 +177,6 @@ const useChat = () => {
     cacheVisualization,
     getCachedVisualization
   };
-};
-
-// Header Component - Mobile First
-const Header: React.FC = () => {
-  return (
-    <header className="bg-gradient-to-r from-slate-900 to-slate-800 border-b border-slate-700 p-3 sticky top-0 z-50">
-      <div className="flex items-center justify-center space-x-2">
-        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-          <span className="text-lg">🚀</span>
-        </div>
-        <h1 className="text-white font-bold text-lg">Astra AI</h1>
-      </div>
-    </header>
-  );
-};
-
 // Typing Indicator Component
 const TypingIndicator: React.FC = () => {
   return (
