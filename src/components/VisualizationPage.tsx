@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 
@@ -12,214 +12,93 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visualizationHtml, setVisualizationHtml] = useState<string>('');
+  const hasInitialized = useRef(false);
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
   const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Generate visualization based on content analysis
-    const htmlContent = generateMockVisualization(content, type);
-    return htmlContent;
-  };
+    console.log('🔑 API Key check:', {
+      hasApiKey: !!import.meta.env.VITE_GEMINI_API_KEY,
+      apiKeyLength: import.meta.env.VITE_GEMINI_API_KEY?.length || 0
+    });
 
-  const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
-    // Analyze content for keywords to determine chart type
-    const lowerContent = content.toLowerCase();
-    const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
-    const hasGrowth = lowerContent.includes('growth') || lowerContent.includes('increase') || lowerContent.includes('trend');
-    const hasComparison = lowerContent.includes('vs') || lowerContent.includes('compare') || lowerContent.includes('versus');
-    const hasTime = lowerContent.includes('year') || lowerContent.includes('month') || lowerContent.includes('quarter');
-    
-    let chartType = 'bar';
-    let chartData = '';
-    let title = 'Data Analysis';
-    let metrics = '';
-    
-    if (hasRevenue && hasTime) {
-      chartType = 'line';
-      title = 'Revenue Growth Analysis';
-      chartData = `
-        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'],
-        datasets: [{
-          label: 'Revenue ($M)',
-          data: [12, 19, 25, 32, 45],
-          borderColor: '#FF4500',
-          backgroundColor: 'rgba(255, 69, 0, 0.1)',
-          borderWidth: 3,
-          fill: true
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Total Revenue</h3>
-          <p>$133M</p>
-        </div>
-        <div class="metric">
-          <h3>Growth Rate</h3>
-          <p>275%</p>
-        </div>
-        <div class="metric">
-          <h3>Avg. Quarterly</h3>
-          <p>$26.6M</p>
-        </div>`;
-    } else if (hasComparison) {
-      chartType = 'bar';
-      title = 'Comparative Analysis';
-      chartData = `
-        labels: ['Product A', 'Product B', 'Product C', 'Product D'],
-        datasets: [{
-          label: 'Performance Score',
-          data: [85, 92, 78, 96],
-          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
-          borderColor: '#FF4500',
-          borderWidth: 2
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Best Performer</h3>
-          <p>Product D</p>
-        </div>
-        <div class="metric">
-          <h3>Average Score</h3>
-          <p>87.8</p>
-        </div>
-        <div class="metric">
-          <h3>Improvement</h3>
-          <p>+12%</p>
-        </div>`;
-    } else if (hasGrowth) {
-      chartType = 'line';
-      title = 'Growth Trend Analysis';
-      chartData = `
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Growth %',
-          data: [5, 12, 18, 25, 32, 45],
-          borderColor: '#FF4500',
-          backgroundColor: 'rgba(255, 69, 0, 0.2)',
-          borderWidth: 3,
-          fill: true
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Peak Growth</h3>
-          <p>45%</p>
-        </div>
-        <div class="metric">
-          <h3>Avg Growth</h3>
-          <p>22.8%</p>
-        </div>
-        <div class="metric">
-          <h3>Trend</h3>
-          <p>Upward</p>
-        </div>`;
-    } else {
-      // Default dashboard
-      chartType = 'doughnut';
-      title = 'Data Overview';
-      chartData = `
-        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
-        datasets: [{
-          data: [35, 25, 20, 20],
-          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
-          borderWidth: 2
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Total Items</h3>
-          <p>100</p>
-        </div>
-        <div class="metric">
-          <h3>Categories</h3>
-          <p>4</p>
-        </div>
-        <div class="metric">
-          <h3>Top Category</h3>
-          <p>Category A</p>
-        </div>`;
+    if (!import.meta.env.VITE_GEMINI_API_KEY) {
+      throw new Error('Gemini API key not found. Please check your environment variables.');
     }
 
-    const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f5f5f5; 
-        }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-        }
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin: 20px 0;
-        }
-        h1 { color: #333; text-align: center; }
-        .metric { 
-            display: inline-block; 
-            margin: 10px; 
-            padding: 15px; 
-            background: #FF4500; 
-            color: white; 
-            border-radius: 8px; 
-            text-align: center;
-        }
-        .metric h3 { margin: 0 0 5px 0; font-size: 14px; }
-        .metric p { margin: 0; font-size: 18px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>📊 ${title}</h1>
-        <div class="metrics">
-            ${metrics}
-        </div>
-        <div class="chart-container">
-            <canvas id="chart"></canvas>
-        </div>
-    </div>
-    <script>
-        const ctx = document.getElementById('chart').getContext('2d');
-        new Chart(ctx, {
-            type: '${chartType}',
-            data: {
-                ${chartData}
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: '${title}'
-                    }
-                }
-            }
-        });
-    </script>
-</body>
-</html>`;
+    const prompt = `Create a comprehensive HTML data visualization dashboard based on this content: "${content}"
+
+Requirements:
+- Use Chart.js for interactive charts
+- Dark theme with these exact colors:
+  * Background: #1a1a2e and #16213e (gradients)
+  * Primary orange: #FF4500
+  * Secondary orange: #FF6B35
+  * Accent orange: #FFAD5A
+  * Text: white and light gray
+- Include multiple relevant charts (bar, line, pie, doughnut as appropriate)
+- Add key metrics cards at the top
+- Professional dashboard layout
+- RocketHub branding
+- Responsive design
+- No external CSS frameworks except Chart.js
+
+Return ONLY the complete HTML code, no explanations or markdown.`;
+
+    console.log('🚀 Making Gemini 2.5 Flash API request...');
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          }
+        })
+      });
+
+      console.log('📡 API Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('❌ API Error:', errorData);
+        throw new Error(`Gemini API error: ${response.status} - ${errorData}`);
+      }
+
+      const data = await response.json();
+      console.log('📊 API Response received, processing...');
+
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        throw new Error('Invalid response format from Gemini API');
+      }
+
+      const htmlContent = data.candidates[0].content.parts[0].text;
+      console.log('✅ Generated HTML length:', htmlContent.length);
       
-      console.log('Generated HTML length:', htmlContent.length);
       return htmlContent;
+    } catch (error) {
+      console.error('❌ Gemini API Error:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {
+    if (hasInitialized.current) {
+      console.log('⏭️ Already initialized, skipping...');
+      return;
+    }
+
     const loadVisualization = async () => {
       console.log('🔄 Starting visualization load...');
       
@@ -235,6 +114,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
+        hasInitialized.current = true;
         return;
       }
 
@@ -242,6 +122,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('🔄 Setting loading to true');
         setIsLoading(true);
         setError(null);
+        hasInitialized.current = true;
         
         console.log('🚀 Generating visualization...');
         const html = await generateVisualization(messageContent, visualizationType || 'quick');
@@ -275,6 +156,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
+    hasInitialized.current = false;
     
     // Retry generation
     setTimeout(async () => {
@@ -290,6 +172,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
       } finally {
         setIsLoading(false);
+        hasInitialized.current = true;
       }
     }, 500);
   };
@@ -337,7 +220,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <Loader2 className="w-12 h-12 text-[#FF4500] animate-spin mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Generating Visualization</h2>
               <p className="text-gray-400 text-center max-w-md">
-                Using AI to analyze your data and create interactive charts...
+                Astra AI will analyze your data and create your visualization
               </p>
             </div>
           ) : error ? (
@@ -366,7 +249,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           ) : visualizationHtml ? (
             <div className="space-y-6">
               {/* Visualization Container */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="rounded-lg shadow-lg overflow-hidden">
                 <iframe
                   srcDoc={visualizationHtml}
                   className="w-full h-[600px] border-0"
@@ -375,30 +258,13 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* Action Button */}
+              <div className="flex justify-center">
                 <button
                   onClick={handleGoBack}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium"
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg transition-colors font-medium"
                 >
                   Back to Chat
-                </button>
-                <button
-                  onClick={() => {
-                    // Create a blob URL for the HTML content
-                    const blob = new Blob([visualizationHtml], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'astra-visualization.html';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  }}
-                  className="flex-1 bg-[#FF4500] hover:bg-[#FF6B35] text-white px-6 py-3 rounded-lg transition-colors font-medium"
-                >
-                  Download Visualization
                 </button>
               </div>
             </div>
