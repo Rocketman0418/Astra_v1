@@ -55,11 +55,17 @@ textarea:focus-visible {
 /* Mobile optimizations */
 @media (max-width: 768px) {
   /* Prevent horizontal scroll */
-  html, body, #root, * {
+  html, body, #root {
     overflow-x: hidden;
-    width: 100vw;
-    max-width: 100vw;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
+  }
+  
+  /* Force all elements to respect viewport */
+  * {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
   }
   
   /* Better touch targets */
@@ -75,21 +81,22 @@ textarea:focus-visible {
   }
   
   /* Ensure all containers respect viewport width */
-  * {
-    max-width: 100vw;
-    box-sizing: border-box !important;
+  .container, .flex, .grid {
+    max-width: 100% !important;
+    width: 100% !important;
   }
   
   /* Fix input zoom on iOS */
   input, textarea, select {
     font-size: 16px !important;
+    max-width: 100% !important;
   }
 }
 
 /* Ensure full width on all screen sizes */
 html, body, #root {
-  width: 100vw;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -97,18 +104,26 @@ html, body, #root {
 
 /* Prevent any element from causing horizontal scroll */
 * {
-  box-sizing: border-box !important;
-  max-width: 100vw;
+  box-sizing: border-box;
 }
 
-/* Force all flex containers to respect viewport width */
-.flex {
-  max-width: 100vw;
-  box-sizing: border-box;
+/* Specific mobile viewport fixes */
+@media (max-width: 768px) {
+  /* Force strict width control on mobile */
+  body, #root, main, div, section, header, footer {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Prevent text from causing overflow */
+  h1, h2, h3, p, span {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
 }
 
 /* Ensure text areas and inputs don't overflow */
 textarea, input {
-  max-width: 100% !important;
-  box-sizing: border-box !important;
+  max-width: 100%;
+  box-sizing: border-box;
 }

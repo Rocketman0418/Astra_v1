@@ -190,30 +190,29 @@ const useChat = () => {
 // Header Component
 const Header: React.FC = () => {
   return (
-    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-2 sm:px-6 py-2 sm:py-4 sticky top-0 z-50">
-      <div className="flex items-center justify-between w-full">
+    <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-1 sm:px-6 py-1 sm:py-4 sticky top-0 z-50 w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-center w-full max-w-full min-w-0">
         <img 
           src="/rockethub-logo.png" 
           alt="RocketHub Logo" 
-          className="h-8 sm:h-12 w-auto flex-shrink-0"
+          className="h-6 sm:h-12 w-auto flex-shrink-0"
           onError={(e) => {
             console.error('Logo failed to load:', e);
             // Hide the image if it fails to load
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />
-        <div className="flex-1 flex items-center justify-center px-2">
-          <h1 className="text-xs sm:text-xl font-bold text-white flex items-center space-x-1 sm:space-x-3">
-            <div className="w-5 h-5 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
+        <div className="flex-1 flex items-center justify-center px-1 min-w-0">
+          <h1 className="text-xs sm:text-xl font-bold text-white flex items-center space-x-1 sm:space-x-3 truncate">
+            <div className="w-4 h-4 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs sm:text-lg">🚀</span>
             </div>
-            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-tight truncate max-w-[200px] sm:max-w-none">
-              <span className="hidden sm:inline">Astra: Company Intelligence Agent</span>
-              <span className="sm:hidden">Astra AI</span>
+            <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-tight truncate min-w-0">
+              <span className="hidden sm:inline whitespace-nowrap">Astra: Company Intelligence Agent</span>
+              <span className="sm:hidden whitespace-nowrap">Astra AI</span>
             </span>
           </h1>
         </div>
-        <div className="w-8 sm:w-12 flex-shrink-0"></div>
       </div>
     </header>
   );

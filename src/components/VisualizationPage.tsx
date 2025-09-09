@@ -257,35 +257,35 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213e] flex flex-col">
       {/* Header - Same as chat page */}
-      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-2 sm:px-6 py-2 sm:py-4 sticky top-0 z-50 w-full overflow-hidden">
-        <div className="flex items-center justify-between w-full max-w-full min-w-0">
+      <header className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] border-b border-gray-700 px-1 sm:px-6 py-1 sm:py-4 sticky top-0 z-50 w-full max-w-full overflow-hidden">
+        <div className="flex items-center justify-between w-full max-w-full min-w-0 space-x-1">
           <img 
             src="/rockethub-logo.png"
             alt="RocketHub Logo" 
-            className="h-5 sm:h-12 w-auto flex-shrink-0"
+            className="h-6 sm:h-12 w-auto flex-shrink-0"
             onError={(e) => {
               console.error('Logo failed to load:', e);
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <div className="flex-1 flex items-center justify-center px-1 sm:px-2 min-w-0 overflow-hidden">
+          <div className="flex-1 flex items-center justify-center min-w-0 overflow-hidden">
             <h1 className="text-xs sm:text-xl font-bold text-white flex items-center space-x-1 sm:space-x-3 truncate min-w-0">
-              <div className="w-3 h-3 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-4 h-4 sm:w-8 sm:h-8 bg-[#FF4500] rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-xs sm:text-lg">🚀</span>
               </div>
               <span className="bg-gradient-to-r from-[#FF4500] to-[#FF6B35] bg-clip-text text-transparent font-extrabold tracking-tight truncate min-w-0">
-                <span className="hidden sm:inline">Astra: Company Intelligence Agent</span>
-                <span className="sm:hidden">Astra AI</span>
+                <span className="hidden sm:inline whitespace-nowrap">Astra: Company Intelligence Agent</span>
+                <span className="sm:hidden whitespace-nowrap">Astra AI</span>
               </span>
             </h1>
           </div>
           <div className="flex justify-end flex-shrink-0">
             <button
               onClick={handleBack}
-              className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors px-1 sm:px-3 py-1 sm:py-2 rounded-lg hover:bg-gray-700 text-xs sm:text-sm"
+              className="flex items-center text-gray-300 hover:text-white transition-colors px-1 sm:px-3 py-1 sm:py-2 rounded-lg hover:bg-gray-700 text-xs sm:text-sm"
             >
               <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span className="text-xs sm:text-sm whitespace-nowrap">Back</span>
+              <span className="hidden sm:inline text-xs sm:text-sm whitespace-nowrap ml-1">Back</span>
             </button>
           </div>
         </div>
