@@ -16,59 +16,145 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
   const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    if (!apiKey) {
-      throw new Error('Gemini API key not found. Please check your environment variables.');
-    }
+    // Generate visualization based on content analysis
+    const htmlContent = generateMockVisualization(content, type);
+    return htmlContent;
+  };
 
-    const prompt = type === 'quick' 
-      ? `Create a simple HTML visualization (chart, graph, or dashboard) based on this data. Use Chart.js or similar libraries via CDN. Make it colorful and professional. Return only the complete HTML code that can be displayed in an iframe:
-
-${content}`
-      : `Create a comprehensive HTML dashboard with multiple visualizations based on this data. Include charts, graphs, tables, and key metrics. Use Chart.js, D3.js, or similar libraries via CDN. Make it interactive and professional. Return only the complete HTML code that can be displayed in an iframe:
-
-${content}`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 8192,
+  const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
+    // Analyze content for keywords to determine chart type
+    const lowerContent = content.toLowerCase();
+    const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
+    const hasGrowth = lowerContent.includes('growth') || lowerContent.includes('increase') || lowerContent.includes('trend');
+    const hasComparison = lowerContent.includes('vs') || lowerContent.includes('compare') || lowerContent.includes('versus');
+    const hasTime = lowerContent.includes('year') || lowerContent.includes('month') || lowerContent.includes('quarter');
+    
+    let chartType = 'bar';
+    let chartData = '';
+    let title = 'Data Analysis';
+    let metrics = '';
+    
+    if (hasRevenue && hasTime) {
+      chartType = 'line';
+      title = 'Revenue Growth Analysis';
+      chartData = `
+        labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024'],
+        datasets: [{
+          label: 'Revenue ($M)',
+          data: [12, 19, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.1)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Total Revenue</h3>
+          <p>$133M</p>
+        </div>
+        <div class="metric">
+          <h3>Growth Rate</h3>
+          <p>275%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg. Quarterly</h3>
+          <p>$26.6M</p>
+        </div>`;
+    } else if (hasComparison) {
+      chartType = 'bar';
+      title = 'Comparative Analysis';
+      chartData = `
+        labels: ['Product A', 'Product B', 'Product C', 'Product D'],
+        datasets: [{
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
         }
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response from Gemini API');
-    }
-
-    let htmlContent = data.candidates[0].content.parts[0].text;
-    
-    // Clean up the HTML content
-    htmlContent = htmlContent.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
-    
-    // Ensure it's a complete HTML document
-    if (!htmlContent.includes('<!DOCTYPE html>') && !htmlContent.includes('<html')) {
-      htmlContent = `<!DOCTYPE html>
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        h1 { color: #333; text-align: center; }
+        .metric { 
+            display: inline-block; 
+            margin: 10px; 
+            padding: 15px; 
+            background: #FF4500; 
+            color: white; 
+            border-radius: 8px; 
+            text-align: center;
+        }
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -82,13 +168,20 @@ ${content}`;
 </head>
 <body>
     <div class="container">
+        <h1>📊 RocketHub Data Analysis</h1>
         ${htmlContent}
     </div>
 </body>
 </html>`;
+      }
+      
+      console.log('Generated HTML length:', htmlContent.length);
+      return htmlContent;
+      
+    } catch (error) {
+      console.error('Gemini API call failed:', error);
+      throw error;
     }
-    
-    return htmlContent;
   };
 
   useEffect(() => {
