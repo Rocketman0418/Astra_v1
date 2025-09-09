@@ -12,20 +12,11 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visualizationHtml, setVisualizationHtml] = useState<string>('');
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
-  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Generate visualization based on content analysis
-    const htmlContent = generateMockVisualization(content, type);
-    return htmlContent;
-  };
-
   const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
-    // Analyze content for keywords to determine chart type
     const lowerContent = content.toLowerCase();
     const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
     const hasGrowth = lowerContent.includes('growth') || lowerContent.includes('increase') || lowerContent.includes('trend');
@@ -115,7 +106,6 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           <p>Upward</p>
         </div>`;
     } else {
-      // Default dashboard
       chartType = 'doughnut';
       title = 'Data Overview';
       chartData = `
@@ -215,11 +205,18 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 </body>
 </html>`;
       
-      console.log('Generated HTML length:', htmlContent.length);
-      return htmlContent;
+    return htmlContent;
+  };
+
+  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const htmlContent = generateMockVisualization(content, type);
+    return htmlContent;
   };
 
   useEffect(() => {
+    if (hasInitialized) return;
+
     const loadVisualization = async () => {
       console.log('🔄 Starting visualization load...');
       
@@ -227,14 +224,15 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('❌ No message content provided');
         setError('No message content provided');
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
-      // Check if we have cached visualization
       if (cachedVisualization) {
         console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
+        setHasInitialized(true);
         return;
       }
 
@@ -248,7 +246,6 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('✅ Visualization generated, setting HTML...');
         setVisualizationHtml(html);
         
-        // Cache the visualization
         if (cacheVisualization && messageId) {
           console.log('💾 Caching visualization...');
           cacheVisualization(messageId, html);
@@ -261,11 +258,12 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       } finally {
         console.log('🔄 Setting loading to false');
         setIsLoading(false);
+        setHasInitialized(true);
       }
     };
 
     loadVisualization();
-  }, [messageContent, visualizationType, cachedVisualization, messageId, cacheVisualization]);
+  }, [hasInitialized, messageContent, visualizationType, cachedVisualization, messageId, cacheVisualization]);
 
   const handleGoBack = () => {
     navigate('/');
@@ -275,23 +273,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
-    
-    // Retry generation
-    setTimeout(async () => {
-      try {
-        const html = await generateVisualization(messageContent, visualizationType || 'quick');
-        setVisualizationHtml(html);
-        
-        if (cacheVisualization && messageId) {
-          cacheVisualization(messageId, html);
-        }
-      } catch (err) {
-        console.error('Retry error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to generate visualization');
-      } finally {
-        setIsLoading(false);
-      }
-    }, 500);
+    setHasInitialized(false); // Reset the flag to allow re-execution
   };
 
   if (!messageContent) {
@@ -385,7 +367,6 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
                 </button>
                 <button
                   onClick={() => {
-                    // Create a blob URL for the HTML content
                     const blob = new Blob([visualizationHtml], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
