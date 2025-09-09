@@ -1,10 +1,22 @@
-@@ .. @@
-   "dependencies": {
-     "expo": "~52.0.11",
-     "expo-status-bar": "~2.0.0",
-     "react": "18.3.1",
-    "react-native": "0.76.3",
-    "@react-native-async-storage/async-storage": "1.23.1",
-    "@expo/vector-icons": "^14.0.4"
-+    "@expo/vector-icons": "^14.0.4"
-   },
+{
+  "name": "astra-mobile",
+  "version": "1.0.0",
+  "main": "App.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "~51.0.28",
+    "react": "18.2.0",
+    "react-native": "0.74.5",
+    "@expo/vector-icons": "^14.0.2",
+    "expo-status-bar": "~1.12.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
