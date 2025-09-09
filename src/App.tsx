@@ -472,12 +472,12 @@ function App() {
     <Routes>
       <Route path="/" element={
         <div className="app">
-          <header className="app-header">
-            <div className="header-content">
-              <div className="header-logo">
+          <header className="mobile-header" style={{width: '100%', maxWidth: '100vw', overflow: 'hidden'}}>
+            <div className="mobile-header-content" style={{display: 'flex', alignItems: 'center', gap: '8px', maxWidth: 'calc(100vw - 16px)'}}>
+              <div className="mobile-logo" style={{width: '20px', height: '20px', background: '#f97316', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0}}>
                 <span>🚀</span>
               </div>
-              <h1>Astra AI</h1>
+              <h1 className="mobile-title" style={{fontSize: '14px', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px'}}>Astra AI</h1>
             </div>
           </header>
           <ChatContainer 

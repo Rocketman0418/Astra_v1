@@ -13,20 +13,70 @@
     <meta name="apple-mobile-web-app-title" content="Astra AI" />
     <title>Astra AI Chat Interface</title>
     <style>
-      /* Critical mobile CSS to prevent horizontal scroll */
-      * {
-        box-sizing: border-box !important;
-        max-width: 100% !important;
-      }
-      html, body {
+      /* AGGRESSIVE MOBILE CSS - FORCE OVERRIDE */
+      * { 
+        box-sizing: border-box !important; 
+        max-width: 100vw !important;
         overflow-x: hidden !important;
-        width: 100% !important;
-        margin: 0 !important;
+      }
+      html { 
+        width: 100% !important; 
+        overflow-x: hidden !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+      }
+      body { 
+        width: 100% !important; 
+        overflow-x: hidden !important; 
+        margin: 0 !important; 
         padding: 0 !important;
+        font-size: 16px !important;
+        -webkit-text-size-adjust: 100% !important;
       }
-      #root {
+      #root { 
+        width: 100% !important; 
+        overflow-x: hidden !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+      }
+      /* FORCE MOBILE HEADER FIX */
+      .mobile-header {
         width: 100% !important;
-        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
+        padding: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #1e293b !important;
+        border-bottom: 1px solid #334155 !important;
+      }
+      .mobile-header-content {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        max-width: calc(100vw - 16px) !important;
+        overflow: hidden !important;
+      }
+      .mobile-logo {
+        width: 20px !important;
+        height: 20px !important;
+        background: #f97316 !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 10px !important;
+        flex-shrink: 0 !important;
+      }
+      .mobile-title {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: white !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 120px !important;
       }
     </style>
   </head>
