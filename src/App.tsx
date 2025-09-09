@@ -9,6 +9,7 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  isExpanded?: boolean;
 }
 
 // Inline styles for mobile-first design
@@ -103,8 +104,9 @@ const styles = {
     borderRadius: '16px',
     maxWidth: '250px',
     wordWrap: 'break-word' as const,
-    fontSize: '14px',
-    lineHeight: '1.4'
+    fontSize: '16px',
+    lineHeight: '1.5',
+    position: 'relative' as const
   },
   userBubble: {
     backgroundColor: '#3b82f6',
@@ -113,6 +115,29 @@ const styles = {
   botBubble: {
     backgroundColor: '#f97316',
     color: 'white'
+  },
+  showMoreButton: {
+    background: 'none',
+    border: 'none',
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    marginTop: '8px',
+    padding: '4px 0'
+  },
+  visualizationButton: {
+    backgroundColor: '#10b981',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    padding: '8px 16px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    marginTop: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px'
   },
   inputArea: {
     padding: '16px',
@@ -169,6 +194,23 @@ function ChatApp() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const toggleMessageExpansion = (messageId: string) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, isExpanded: !msg.isExpanded }
+        : msg
+    ));
+  };
+
+  const createVisualization = (messageText: string) => {
+    // For now, just show an alert - you can implement actual visualization logic
+    alert('Visualization feature coming soon!\n\nThis would create a chart based on:\n' + messageText.substring(0, 100) + '...');
+  };
+
+  const shouldTruncate = (text: string) => text.length > 300;
+  
+  const getTruncatedText = (text: string) => text.substring(0, 300) + '...';
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -204,7 +246,8 @@ function ChatApp() {
           id: (Date.now() + 1).toString(),
           text: data || "I'm sorry, I didn't receive a proper response.",
           isUser: false,
-          timestamp: new Date()
+          timestamp: new Date(),
+          isExpanded: false
         };
         setMessages(prev => [...prev, botMessage]);
       } else {
@@ -215,7 +258,8 @@ function ChatApp() {
         id: (Date.now() + 1).toString(),
         text: "Sorry, I'm having trouble connecting. Please try again.",
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        isExpanded: false
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -267,7 +311,30 @@ function ChatApp() {
                 ...styles.bubble,
                 ...(message.isUser ? styles.userBubble : styles.botBubble)
               }}>
-                {message.text}
+                <div>
+                  {!message.isUser && shouldTruncate(message.text) && !message.isExpanded
+                    ? getTruncatedText(message.text)
+                    : message.text
+                  }
+                </div>
+                
+                {!message.isUser && shouldTruncate(message.text) && (
+                  <button
+                    style={styles.showMoreButton}
+                    onClick={() => toggleMessageExpansion(message.id)}
+                  >
+                    {message.isExpanded ? 'Show Less' : 'Show More'}
+                  </button>
+                )}
+                
+                {!message.isUser && message.text.length > 100 && (
+                  <button
+                    style={styles.visualizationButton}
+                    onClick={() => createVisualization(message.text)}
+                  >
+                    📊 Create Visualization
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -277,7 +344,7 @@ function ChatApp() {
           <div style={styles.message}>
             <div style={styles.botAvatar}>🚀</div>
             <div style={styles.typing}>
-              <span>Astra is thinking...</span>
+              <span style={{ fontSize: '16px' }}>Astra is thinking...</span>
             </div>
           </div>
         )}
