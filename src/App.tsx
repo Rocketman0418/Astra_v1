@@ -211,6 +211,7 @@ function ChatApp() {
                   {!message.isUser && shouldTruncate(message.text) && !message.isExpanded
                     ? getTruncatedText(message.text)
                     : message.text
+                  }
                 </div>
                 
                 {!message.isUser && shouldTruncate(message.text) && (
