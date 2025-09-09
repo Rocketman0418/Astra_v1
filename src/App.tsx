@@ -181,17 +181,59 @@ const useChat = () => {
 // Typing Indicator Component
 const TypingIndicator: React.FC = () => {
   return (
-    <div className="message-container">
-      <div className="message-avatar">
-        <Rocket className="w-4 h-4 text-white" />
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '12px',
+      marginBottom: '16px',
+      padding: '0 16px',
+      width: '100%'
+    }}>
+      <div style={{
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        background: '#f97316',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0
+      }}>
+        <Rocket style={{ width: '16px', height: '16px', color: 'white' }} />
       </div>
-      <div className="message-bubble astra-bubble">
-        <div className="typing-indicator">
+      <div style={{
+        background: '#f97316',
+        borderRadius: '16px',
+        padding: '12px 16px',
+        color: 'white',
+        maxWidth: '320px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span>Astra is thinking</span>
-          <div className="typing-dots">
-            <div className="dot"></div>
-            <div className="dot"></div>
-            <div className="dot"></div>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              background: 'white',
+              borderRadius: '50%',
+              animation: 'bounce 1.4s infinite ease-in-out both'
+            }}></div>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              background: 'white',
+              borderRadius: '50%',
+              animation: 'bounce 1.4s infinite ease-in-out both',
+              animationDelay: '-0.16s'
+            }}></div>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              background: 'white',
+              borderRadius: '50%',
+              animation: 'bounce 1.4s infinite ease-in-out both',
+              animationDelay: '-0.32s'
+            }}></div>
           </div>
         </div>
       </div>
@@ -273,18 +315,55 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const displayMessage = displayLines.join('\n');
 
   return (
-    <div className={`message-container ${isUser ? 'user-message' : 'astra-message'}`}>
-      <div className="message-avatar">
+    <div style={{
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '12px',
+      marginBottom: '16px',
+      padding: '0 16px',
+      width: '100%',
+      flexDirection: isUser ? 'row-reverse' : 'row'
+    }}>
+      <div style={{
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        background: isUser ? '#3b82f6' : '#f97316'
+      }}>
         {isUser ? (
-          <User className="w-4 h-4 text-white" />
+          <User style={{ width: '16px', height: '16px', color: 'white' }} />
         ) : (
-          <Rocket className="w-4 h-4 text-white" />
+          <Rocket style={{ width: '16px', height: '16px', color: 'white' }} />
         )}
       </div>
 
-      <div className="message-content">
-        <div className={`message-bubble ${isUser ? 'user-bubble' : 'astra-bubble'}`}>
-          <div className="message-text">
+      <div style={{
+        flex: 1,
+        minWidth: 0,
+        maxWidth: 'calc(100% - 44px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: isUser ? 'flex-end' : 'flex-start'
+      }}>
+        <div style={{
+          borderRadius: '16px',
+          padding: '12px 16px',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          hyphens: 'auto',
+          maxWidth: isUser ? '280px' : '320px',
+          background: isUser ? '#3b82f6' : '#f97316',
+          color: 'white'
+        }}>
+          <div style={{
+            fontSize: '14px',
+            lineHeight: '1.5',
+            wordBreak: 'break-word'
+          }}>
             {displayMessage.split('\n').map((line, index, array) => {
               const formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
               
@@ -298,19 +377,32 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           </div>
           
           {shouldTruncate && (
-            <div className="message-expand">
+            <div style={{
+              marginTop: '8px',
+              paddingTop: '8px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="expand-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '12px',
+                  cursor: 'pointer'
+                }}
               >
                 {isExpanded ? (
                   <>
-                    <ChevronUp className="w-3 h-3" />
+                    <ChevronUp style={{ width: '12px', height: '12px' }} />
                     <span>Show Less</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-3 h-3" />
+                    <ChevronDown style={{ width: '12px', height: '12px' }} />
                     <span>Show More</span>
                   </>
                 )}
@@ -319,18 +411,41 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
           
           {!isUser && !isInitialResponse && (
-            <div className="message-actions">
+            <div style={{
+              marginTop: '12px',
+              paddingTop: '8px',
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
               <button
                 onClick={() => openVisualization('quick')}
-                className="chart-button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: 'linear-gradient(45deg, #3b82f6, #8b5cf6)',
+                  color: 'white',
+                  fontWeight: '500',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '12px',
+                  width: '100%',
+                  cursor: 'pointer'
+                }}
               >
-                <BarChart3 className="w-3 h-3" />
+                <BarChart3 style={{ width: '12px', height: '12px' }} />
                 <span>{hasVisualization ? 'View Chart' : 'Create Chart'}</span>
               </button>
             </div>
           )}
         </div>
-        <p className="message-time">
+        <p style={{
+          fontSize: '11px',
+          color: '#64748b',
+          marginTop: '4px',
+          padding: '0 8px'
+        }}>
           {formatTime(timestamp)}
         </p>
       </div>
@@ -338,24 +453,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   );
 };
 
-// Chat Container Component
-interface ChatContainerProps {
-  messages: Message[];
-  isLoading: boolean;
-  isMessageVisualized: (messageId: string) => boolean;
-  onMarkAsVisualized: (messageId: string) => void;
-  cacheVisualization: (messageId: string, htmlContent: string) => void;
-  getCachedVisualization: (messageId: string) => string | undefined;
-}
-
-const ChatContainer: React.FC<ChatContainerProps> = ({ 
-  messages, 
-  isLoading, 
-  isMessageVisualized, 
-  onMarkAsVisualized, 
-  cacheVisualization, 
-  getCachedVisualization 
-}) => {
+// Main App Component
+function App() {
+  const { messages, isLoading, error, sendMessage, retryLastMessage, markMessageAsVisualized, isMessageVisualized, cacheVisualization, getCachedVisualization } = useChat();
+  const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -366,55 +467,9 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     scrollToBottom();
   }, [messages, isLoading]);
 
-  return (
-    <div className="chat-container">
-      <div className="messages-area">
-        {messages.length === 0 && (
-          <div className="welcome-screen">
-            <div className="welcome-icon">
-              <span>🚀</span>
-            </div>
-            <h2>Welcome to Astra AI</h2>
-            <p>RocketHub's Company Intelligence Agent</p>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message.text}
-            isUser={message.isUser}
-            timestamp={message.timestamp}
-            isInitialResponse={message.isInitialResponse}
-            messageId={message.id}
-            hasVisualization={isMessageVisualized(message.id)}
-            onMarkAsVisualized={onMarkAsVisualized}
-            getCachedVisualization={getCachedVisualization}
-          />
-        ))}
-        
-        {isLoading && <TypingIndicator />}
-        
-        <div ref={messagesEndRef} />
-      </div>
-    </div>
-  );
-};
-
-// Message Input Component
-interface MessageInputProps {
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  error: string | null;
-  onRetry: () => void;
-}
-
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, error, onRetry }) => {
-  const [message, setMessage] = useState('');
-
   const handleSend = () => {
     if (message.trim() && !isLoading) {
-      onSendMessage(message.trim());
+      sendMessage(message.trim());
       setMessage('');
     }
   };
@@ -427,88 +482,223 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading, e
   };
 
   return (
-    <div className="input-area">
-      {error && (
-        <div className="error-message">
-          <div className="error-content">
-            <AlertCircle className="w-4 h-4" />
-            <span>{error}</span>
-          </div>
-          <button onClick={onRetry} className="retry-button">
-            <RotateCcw className="w-4 h-4" />
-            <span>Retry</span>
-          </button>
-        </div>
-      )}
-      
-      <div className="input-container">
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your message to Astra..."
-          disabled={isLoading}
-          className="message-input"
-          rows={1}
-        />
-        
-        <button
-          onClick={handleSend}
-          disabled={!message.trim() || isLoading}
-          className="send-button"
-        >
-          <Send className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Main App Component
-function App() {
-  const { messages, isLoading, error, sendMessage, retryLastMessage, markMessageAsVisualized, isMessageVisualized, cacheVisualization, getCachedVisualization } = useChat();
-
-  return (
     <Routes>
       <Route path="/" element={
-        <div className="app" style={{display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', overflowX: 'hidden'}}>
-          <header className="mobile-header-force">
-            <div className="mobile-header-content-force">
-              <div className="mobile-logo-force">
-                <span>🚀</span>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          width: '100%',
+          background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+          color: 'white',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        }}>
+          {/* Simple Header */}
+          <header style={{
+            background: '#1e293b',
+            borderBottom: '1px solid #334155',
+            padding: '12px 16px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 50,
+            width: '100%'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}>
+              <div style={{
+                width: '24px',
+                height: '24px',
+                background: '#f97316',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px'
+              }}>
+                🚀
               </div>
-              <h1 className="mobile-title-force">Astra AI</h1>
+              <h1 style={{
+                fontSize: '16px',
+                fontWeight: '700',
+                color: 'white',
+                margin: 0
+              }}>
+                Astra AI
+              </h1>
             </div>
           </header>
           
-          <div className="mobile-chat-force">
-            {messages.length === 0 && (
-              <div className="mobile-welcome-force">
-                <div className="mobile-welcome-icon-force">
-                  <span>🚀</span>
+          {/* Chat Area */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            width: '100%'
+          }}>
+            <div style={{
+              padding: '16px 0',
+              width: '100%'
+            }}>
+              {messages.length === 0 && (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '48px 16px',
+                  width: '100%'
+                }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    background: '#f97316',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                    fontSize: '32px'
+                  }}>
+                    🚀
+                  </div>
+                  <h2 style={{
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: 'white',
+                    marginBottom: '8px'
+                  }}>
+                    Welcome to Astra AI
+                  </h2>
+                  <p style={{
+                    color: '#94a3b8',
+                    fontSize: '14px'
+                  }}>
+                    RocketHub's Company Intelligence Agent
+                  </p>
                 </div>
-                <h2 className="mobile-welcome-title-force">Welcome to Astra AI</h2>
-                <p className="mobile-welcome-subtitle-force">RocketHub's Company Intelligence Agent</p>
+              )}
+              
+              {messages.map((msg) => (
+                <ChatMessage
+                  key={msg.id}
+                  message={msg.text}
+                  isUser={msg.isUser}
+                  timestamp={msg.timestamp}
+                  isInitialResponse={msg.isInitialResponse}
+                  messageId={msg.id}
+                  hasVisualization={isMessageVisualized(msg.id)}
+                  onMarkAsVisualized={markMessageAsVisualized}
+                  getCachedVisualization={getCachedVisualization}
+                />
+              ))}
+              
+              {isLoading && <TypingIndicator />}
+              
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+          
+          {/* Input Area */}
+          <div style={{
+            borderTop: '1px solid #334155',
+            background: '#1e293b',
+            padding: '16px',
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 50,
+            width: '100%'
+          }}>
+            {error && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '12px',
+                width: '100%'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  color: '#ef4444',
+                  fontSize: '14px',
+                  marginBottom: '8px'
+                }}>
+                  <AlertCircle style={{ width: '16px', height: '16px' }} />
+                  <span>{error}</span>
+                </div>
+                <button 
+                  onClick={retryLastMessage}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#ef4444',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <RotateCcw style={{ width: '16px', height: '16px' }} />
+                  <span>Retry</span>
+                </button>
               </div>
             )}
             
-            <ChatContainer 
-              messages={messages} 
-              isLoading={isLoading}
-              isMessageVisualized={isMessageVisualized}
-              onMarkAsVisualized={markMessageAsVisualized}
-              cacheVisualization={cacheVisualization}
-              getCachedVisualization={getCachedVisualization}
-            />
-          </div>
-          
-          <div className="mobile-input-force">
-            <MessageInput 
-              onSendMessage={sendMessage}
-              isLoading={isLoading}
-              error={error}
-              onRetry={retryLastMessage}
-            />
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              gap: '12px',
+              width: '100%'
+            }}>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message to Astra..."
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  background: '#334155',
+                  border: '1px solid #475569',
+                  borderRadius: '16px',
+                  padding: '12px 16px',
+                  color: 'white',
+                  fontSize: '16px',
+                  resize: 'none',
+                  outline: 'none',
+                  minHeight: '44px',
+                  maxHeight: '120px',
+                  width: '100%',
+                  boxSizing: 'border-box'
+                }}
+                rows={1}
+              />
+              
+              <button
+                onClick={handleSend}
+                disabled={!message.trim() || isLoading}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  background: message.trim() && !isLoading ? '#f97316' : '#6b7280',
+                  border: 'none',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  cursor: message.trim() && !isLoading ? 'pointer' : 'not-allowed',
+                  flexShrink: 0
+                }}
+              >
+                <Send style={{ width: '20px', height: '20px' }} />
+              </button>
+            </div>
           </div>
         </div>
       } />
