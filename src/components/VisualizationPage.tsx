@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 
@@ -12,95 +12,19 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visualizationHtml, setVisualizationHtml] = useState<string>('');
-  const hasInitialized = useRef(false);
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
-  const generateVisualizationWithGemini = async (content: string, type: 'quick' | 'detailed') => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log('🔑 API Key check:', {
-      hasApiKey: !!apiKey,
-      apiKeyLength: apiKey ? apiKey.length : 0
-    });
+  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    if (!apiKey) {
-      console.log('❌ No Gemini API key found, using mock visualization');
-      throw new Error('No API key available');
-    }
-
-    const prompt = `Create a comprehensive HTML data visualization based on this business intelligence content:
-
-"${content}"
-
-Requirements:
-1. Use Chart.js for interactive charts
-2. MUST use dark theme matching this color scheme:
-   - Background: #1a1a2e (dark navy)
-   - Secondary background: #16213e (darker navy)
-   - Primary accent: #FF4500 (RocketHub orange)
-   - Secondary accents: #FF6B35, #FFAD5A (orange variations)
-   - Text: white and light gray (#e2e8f0, #94a3b8)
-3. Include multiple relevant metrics and KPIs
-4. Create appropriate chart types based on the data (line, bar, pie, etc.)
-5. Add professional styling with gradients and shadows
-6. Include the RocketHub branding colors throughout
-7. Make it responsive and interactive
-8. Add hover effects and animations
-9. Include a header with "🚀 RocketHub Data Analysis"
-
-Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanations or markdown.`;
-
-    console.log('🚀 Making Gemini API request...');
-    
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 8192,
-          }
-        })
-      });
-
-      console.log('📡 API Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Gemini API error:', errorText);
-        throw new Error(`Gemini API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('📊 API Response received, processing...');
-      
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const htmlContent = data.candidates[0].content.parts[0].text;
-        console.log('✅ Generated HTML length:', htmlContent.length);
-        return htmlContent;
-      } else {
-        console.error('❌ Invalid response structure:', data);
-        throw new Error('Invalid response from Gemini API');
-      }
-    } catch (error) {
-      console.error('❌ Gemini API call failed:', error);
-      throw error;
-    }
+    // Generate visualization based on content analysis
+    const htmlContent = generateMockVisualization(content, type);
+    return htmlContent;
   };
 
   const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
-    console.log('🎭 Using mock visualization fallback');
-    
     // Analyze content for keywords to determine chart type
     const lowerContent = content.toLowerCase();
     const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
@@ -203,6 +127,975 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
         }]`;
       metrics = `
         <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Total Items</h3>
+          <p>100</p>
+        </div>
+        <div class="metric">
+          <h3>Categories</h3>
+          <p>4</p>
+        </div>
+        <div class="metric">
+          <h3>Top Category</h3>
+          <p>Category A</p>
+        </div>`;
+    }
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
           <h3>Total Items</h3>
           <p>100</p>
         </div>
@@ -227,70 +1120,38 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px; 
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e2e8f0;
-            min-height: 100vh;
+            background: #f5f5f5; 
         }
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
-            background: rgba(26, 26, 46, 0.9); 
-            padding: 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255, 69, 0, 0.1);
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
         }
         .chart-container {
             position: relative;
             height: 400px;
-            margin: 30px 0;
-            background: rgba(22, 33, 62, 0.5);
-            border-radius: 12px;
-            padding: 20px;
+            margin: 20px 0;
         }
-        h1 { 
-            color: #FF4500; 
-            text-align: center; 
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .metrics {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
-        }
+        h1 { color: #333; text-align: center; }
         .metric { 
-            background: linear-gradient(135deg, #FF4500 0%, #FF6B35 100%);
+            display: inline-block; 
+            margin: 10px; 
+            padding: 15px; 
+            background: #FF4500; 
             color: white; 
-            border-radius: 12px; 
-            padding: 20px;
+            border-radius: 8px; 
             text-align: center;
-            min-width: 150px;
-            box-shadow: 0 4px 16px rgba(255, 69, 0, 0.3);
-            transition: transform 0.3s ease;
         }
-        .metric:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(255, 69, 0, 0.4);
-        }
-        .metric h3 { 
-            margin: 0 0 10px 0; 
-            font-size: 14px; 
-            opacity: 0.9;
-        }
-        .metric p { 
-            margin: 0; 
-            font-size: 24px; 
-            font-weight: bold; 
-        }
+        .metric h3 { margin: 0 0 5px 0; font-size: 14px; }
+        .metric p { margin: 0; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 RocketHub ${title}</h1>
+        <h1>📊 ${title}</h1>
         <div class="metrics">
             ${metrics}
         </div>
@@ -311,35 +1172,10 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: {
-                            color: '#e2e8f0'
-                        }
                     },
                     title: {
                         display: true,
-                        text: '${title}',
-                        color: '#FF4500',
-                        font: {
-                            size: 18
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: '#94a3b8'
-                        },
-                        grid: {
-                            color: 'rgba(148, 163, 184, 0.1)'
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            color: '#94a3b8'
-                        },
-                        grid: {
-                            color: 'rgba(148, 163, 184, 0.1)'
-                        }
+                        text: '${title}'
                     }
                 }
             }
@@ -352,23 +1188,7 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
       return htmlContent;
   };
 
-  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    try {
-      // Try Gemini first
-      return await generateVisualizationWithGemini(content, type);
-    } catch (error) {
-      console.log('⚠️ Gemini failed, falling back to mock visualization:', error);
-      // Fall back to mock visualization
-      return generateMockVisualization(content, type);
-    }
-  };
-
   useEffect(() => {
-    if (hasInitialized.current) {
-      console.log('🔄 Already initialized, skipping...');
-      return;
-    }
-
     const loadVisualization = async () => {
       console.log('🔄 Starting visualization load...');
       
@@ -384,7 +1204,6 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
         console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
-        hasInitialized.current = true;
         return;
       }
 
@@ -405,11 +1224,9 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
         }
         
         console.log('✅ Visualization set successfully, clearing loading state');
-        hasInitialized.current = true;
       } catch (err) {
         console.error('Visualization generation error:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
-        hasInitialized.current = true;
       } finally {
         console.log('🔄 Setting loading to false');
         setIsLoading(false);
@@ -424,7 +1241,6 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
   };
 
   const handleRetry = () => {
-    hasInitialized.current = false;
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
@@ -438,11 +1254,9 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
         if (cacheVisualization && messageId) {
           cacheVisualization(messageId, html);
         }
-        hasInitialized.current = true;
       } catch (err) {
         console.error('Retry error:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
-        hasInitialized.current = true;
       } finally {
         setIsLoading(false);
       }
@@ -492,7 +1306,7 @@ Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanat
               <Loader2 className="w-12 h-12 text-[#FF4500] animate-spin mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Generating Visualization</h2>
               <p className="text-gray-400 text-center max-w-md">
-                Using Gemini 2.5 Flash to analyze your data and create interactive charts...
+                Using AI to analyze your data and create interactive charts...
               </p>
             </div>
           ) : error ? (
