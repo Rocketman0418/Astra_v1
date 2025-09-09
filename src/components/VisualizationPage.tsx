@@ -16,6 +16,89 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
+  const generateVisualizationWithGemini = async (content: string, type: 'quick' | 'detailed') => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your environment variables.');
+    }
+
+    const prompt = `Create a complete HTML page with interactive data visualization based on this content: "${content}"
+
+Requirements:
+- Create a complete HTML document with <!DOCTYPE html>
+- Include Chart.js from CDN: https://cdn.jsdelivr.net/npm/chart.js
+- Analyze the content and create appropriate charts (line, bar, pie, doughnut, etc.)
+- Extract key metrics and display them as cards
+- Use professional styling with CSS
+- Make it responsive and visually appealing
+- Use RocketHub brand colors: primary #FF4500, secondary #FF6B35
+- Include proper titles and labels
+- If the content mentions specific numbers, use them in the charts
+- If no specific data is provided, create realistic sample data that matches the context
+- Make the visualization ${type === 'detailed' ? 'comprehensive with multiple charts and detailed analysis' : 'focused with one main chart and key metrics'}
+
+Return ONLY the complete HTML code, no explanations or markdown formatting.`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gemini API Error:', errorData);
+        
+        if (response.status === 429) {
+          throw new Error('Rate limit exceeded. Please try again in a moment.');
+        } else if (response.status === 403) {
+          throw new Error('API key invalid or quota exceeded. Please check your Gemini API key.');
+        } else {
+          throw new Error(`Gemini API error: ${response.status}`);
+        }
+      }
+
+      const data = await response.json();
+      
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        throw new Error('Invalid response from Gemini API');
+      }
+
+      let htmlContent = data.candidates[0].content.parts[0].text;
+      
+      // Clean up the response - remove any markdown formatting
+      htmlContent = htmlContent.replace(/```html\n?/g, '').replace(/```\n?/g, '');
+      
+      // Ensure it starts with <!DOCTYPE html>
+      if (!htmlContent.trim().toLowerCase().startsWith('<!doctype html>')) {
+        htmlContent = '<!DOCTYPE html>\n' + htmlContent;
+      }
+
+      console.log('Generated HTML length:', htmlContent.length);
+      return htmlContent;
+      
+    } catch (error) {
+      console.error('Gemini API call failed:', error);
+      throw error;
+    }
+  };
+
   const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
     const lowerContent = content.toLowerCase();
     const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
@@ -209,9 +292,14 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   };
 
   const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const htmlContent = generateMockVisualization(content, type);
-    return htmlContent;
+    try {
+      // Try Gemini first
+      return await generateVisualizationWithGemini(content, type);
+    } catch (error) {
+      console.warn('Gemini visualization failed, falling back to mock:', error);
+      // Fall back to mock visualization
+      return generateMockVisualization(content, type);
+    }
   };
 
   useEffect(() => {
@@ -263,7 +351,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
     };
 
     loadVisualization();
-  }, [hasInitialized, messageContent, visualizationType, cachedVisualization, messageId, cacheVisualization]);
+  }, [hasInitialized]);
 
   const handleGoBack = () => {
     navigate('/');
@@ -273,7 +361,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
-    setHasInitialized(false); // Reset the flag to allow re-execution
+    setHasInitialized(false);
   };
 
   if (!messageContent) {
@@ -319,7 +407,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <Loader2 className="w-12 h-12 text-[#FF4500] animate-spin mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Generating Visualization</h2>
               <p className="text-gray-400 text-center max-w-md">
-                Using AI to analyze your data and create interactive charts...
+                Using Gemini AI to analyze your data and create interactive charts...
               </p>
             </div>
           ) : error ? (
