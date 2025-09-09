@@ -127,6 +127,337 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         }]`;
       metrics = `
         <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Total Items</h3>
+          <p>100</p>
+        </div>
+        <div class="metric">
+          <h3>Categories</h3>
+          <p>4</p>
+        </div>
+        <div class="metric">
+          <h3>Top Category</h3>
+          <p>Category A</p>
+        </div>`;
+    }
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          label: 'Performance Score',
+          data: [85, 92, 78, 96],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderColor: '#FF4500',
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Best Performer</h3>
+          <p>Product D</p>
+        </div>
+        <div class="metric">
+          <h3>Average Score</h3>
+          <p>87.8</p>
+        </div>
+        <div class="metric">
+          <h3>Improvement</h3>
+          <p>+12%</p>
+        </div>`;
+    } else if (hasGrowth) {
+      chartType = 'line';
+      title = 'Growth Trend Analysis';
+      chartData = `
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'Growth %',
+          data: [5, 12, 18, 25, 32, 45],
+          borderColor: '#FF4500',
+          backgroundColor: 'rgba(255, 69, 0, 0.2)',
+          borderWidth: 3,
+          fill: true
+        }]`;
+      metrics = `
+        <div class="metric">
+          <h3>Peak Growth</h3>
+          <p>45%</p>
+        </div>
+        <div class="metric">
+          <h3>Avg Growth</h3>
+          <p>22.8%</p>
+        </div>
+        <div class="metric">
+          <h3>Trend</h3>
+          <p>Upward</p>
+        </div>`;
+    } else {
+      // Default dashboard
+      chartType = 'doughnut';
+      title = 'Data Overview';
+      chartData = `
+        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
+          borderWidth: 2
+        }]`;
+      metrics = `
+        <div class="metric">
           <h3>Total Items</h3>
           <p>100</p>
         </div>
@@ -221,7 +552,10 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
   useEffect(() => {
     const loadVisualization = async () => {
+      console.log('🔄 Starting visualization load...');
+      
       if (!messageContent) {
+        console.log('❌ No message content provided');
         setError('No message content provided');
         setIsLoading(false);
         return;
@@ -229,26 +563,34 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
 
       // Check if we have cached visualization
       if (cachedVisualization) {
+        console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
         return;
       }
 
       try {
+        console.log('🔄 Setting loading to true');
         setIsLoading(true);
         setError(null);
         
+        console.log('🚀 Generating visualization...');
         const html = await generateVisualization(messageContent, visualizationType || 'quick');
+        console.log('✅ Visualization generated, setting HTML...');
         setVisualizationHtml(html);
         
         // Cache the visualization
         if (cacheVisualization && messageId) {
+          console.log('💾 Caching visualization...');
           cacheVisualization(messageId, html);
         }
+        
+        console.log('✅ Visualization set successfully, clearing loading state');
       } catch (err) {
         console.error('Visualization generation error:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
       } finally {
+        console.log('🔄 Setting loading to false');
         setIsLoading(false);
       }
     };
