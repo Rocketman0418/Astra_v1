@@ -189,7 +189,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       if (!response.ok) {
         const errorData = await response.text();
         console.error('❌ API Error:', errorData);
-        throw new Error(\`Gemini API error: ${response.status} - ${errorData}`);
+        throw new Error(`Gemini API error: ${response.status} - ${errorData}`);
       }
 
       const data = await response.json();
@@ -342,56 +342,5 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
           ) : error ? (
             <div className="text-center py-20">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-8 h-8 text-red-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Visualization Error</h2>
-              <p className="text-gray-400 mb-6 max-w-md mx-auto">{error}</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={handleRetry}
-                  className="flex items-center space-x-2 bg-[#FF4500] hover:bg-[#FF6B35] text-white px-6 py-3 rounded-lg transition-colors"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Retry</span>
-                </button>
-                <button
-                  onClick={handleGoBack}
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
-                >
-                  Go Back to Chat
-                </button>
-              </div>
-            </div>
-          ) : visualizationHtml ? (
-            <div className="space-y-6">
-              {/* Visualization Container */}
-              <div className="rounded-lg shadow-lg overflow-hidden">
-                <iframe
-                  srcDoc={visualizationHtml}
-                  className="w-full h-[600px] border-0"
-                  title="Data Visualization"
-                  sandbox="allow-scripts allow-same-origin"
-                />
-              </div>
-
-              {/* Action Button */}
-              <div className="flex justify-center">
-                <button
-                  onClick={handleGoBack}
-                  className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg transition-colors font-medium"
-                >
-                  Back to Chat
-                </button>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default VisualizationPage;
+        </div>`;
     }
-  }
-}
