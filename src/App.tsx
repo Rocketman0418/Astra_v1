@@ -471,29 +471,45 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        <div className="app">
-          <header className="mobile-header" style={{width: '100%', maxWidth: '100vw', overflow: 'hidden'}}>
-            <div className="mobile-header-content" style={{display: 'flex', alignItems: 'center', gap: '8px', maxWidth: 'calc(100vw - 16px)'}}>
-              <div className="mobile-logo" style={{width: '20px', height: '20px', background: '#f97316', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0}}>
+        <div className="app" style={{display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', overflowX: 'hidden'}}>
+          <header className="mobile-header-force">
+            <div className="mobile-header-content-force">
+              <div className="mobile-logo-force">
                 <span>🚀</span>
               </div>
-              <h1 className="mobile-title" style={{fontSize: '14px', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px'}}>Astra AI</h1>
+              <h1 className="mobile-title-force">Astra AI</h1>
             </div>
           </header>
-          <ChatContainer 
-            messages={messages} 
-            isLoading={isLoading}
-            isMessageVisualized={isMessageVisualized}
-            onMarkAsVisualized={markMessageAsVisualized}
-            cacheVisualization={cacheVisualization}
-            getCachedVisualization={getCachedVisualization}
-          />
-          <MessageInput 
-            onSendMessage={sendMessage}
-            isLoading={isLoading}
-            error={error}
-            onRetry={retryLastMessage}
-          />
+          
+          <div className="mobile-chat-force">
+            {messages.length === 0 && (
+              <div className="mobile-welcome-force">
+                <div className="mobile-welcome-icon-force">
+                  <span>🚀</span>
+                </div>
+                <h2 className="mobile-welcome-title-force">Welcome to Astra AI</h2>
+                <p className="mobile-welcome-subtitle-force">RocketHub's Company Intelligence Agent</p>
+              </div>
+            )}
+            
+            <ChatContainer 
+              messages={messages} 
+              isLoading={isLoading}
+              isMessageVisualized={isMessageVisualized}
+              onMarkAsVisualized={markMessageAsVisualized}
+              cacheVisualization={cacheVisualization}
+              getCachedVisualization={getCachedVisualization}
+            />
+          </div>
+          
+          <div className="mobile-input-force">
+            <MessageInput 
+              onSendMessage={sendMessage}
+              isLoading={isLoading}
+              error={error}
+              onRetry={retryLastMessage}
+            />
+          </div>
         </div>
       } />
       <Route path="/visualization" element={<VisualizationPage cacheVisualization={cacheVisualization} />} />
