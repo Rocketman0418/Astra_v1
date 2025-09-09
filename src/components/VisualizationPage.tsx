@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 
@@ -12,19 +12,95 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visualizationHtml, setVisualizationHtml] = useState<string>('');
+  const hasInitialized = useRef(false);
 
   const { messageContent, visualizationType, cachedVisualization, messageId } = location.state || {};
 
-  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const generateVisualizationWithGemini = async (content: string, type: 'quick' | 'detailed') => {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    console.log('🔑 API Key check:', {
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey ? apiKey.length : 0
+    });
     
-    // Generate visualization based on content analysis
-    const htmlContent = generateMockVisualization(content, type);
-    return htmlContent;
+    if (!apiKey) {
+      console.log('❌ No Gemini API key found, using mock visualization');
+      throw new Error('No API key available');
+    }
+
+    const prompt = `Create a comprehensive HTML data visualization based on this business intelligence content:
+
+"${content}"
+
+Requirements:
+1. Use Chart.js for interactive charts
+2. MUST use dark theme matching this color scheme:
+   - Background: #1a1a2e (dark navy)
+   - Secondary background: #16213e (darker navy)
+   - Primary accent: #FF4500 (RocketHub orange)
+   - Secondary accents: #FF6B35, #FFAD5A (orange variations)
+   - Text: white and light gray (#e2e8f0, #94a3b8)
+3. Include multiple relevant metrics and KPIs
+4. Create appropriate chart types based on the data (line, bar, pie, etc.)
+5. Add professional styling with gradients and shadows
+6. Include the RocketHub branding colors throughout
+7. Make it responsive and interactive
+8. Add hover effects and animations
+9. Include a header with "🚀 RocketHub Data Analysis"
+
+Return ONLY the complete HTML code with embedded CSS and JavaScript. No explanations or markdown.`;
+
+    console.log('🚀 Making Gemini API request...');
+    
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+          }
+        })
+      });
+
+      console.log('📡 API Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Gemini API error:', errorText);
+        throw new Error(`Gemini API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('📊 API Response received, processing...');
+      
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const htmlContent = data.candidates[0].content.parts[0].text;
+        console.log('✅ Generated HTML length:', htmlContent.length);
+        return htmlContent;
+      } else {
+        console.error('❌ Invalid response structure:', data);
+        throw new Error('Invalid response from Gemini API');
+      }
+    } catch (error) {
+      console.error('❌ Gemini API call failed:', error);
+      throw error;
+    }
   };
 
   const generateMockVisualization = (content: string, type: 'quick' | 'detailed') => {
+    console.log('🎭 Using mock visualization fallback');
+    
     // Analyze content for keywords to determine chart type
     const lowerContent = content.toLowerCase();
     const hasRevenue = lowerContent.includes('revenue') || lowerContent.includes('sales') || lowerContent.includes('income');
@@ -151,38 +227,70 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px; 
-            background: #f5f5f5; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
         }
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            background: rgba(26, 26, 46, 0.9); 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 69, 0, 0.1);
         }
         .chart-container {
             position: relative;
             height: 400px;
-            margin: 20px 0;
+            margin: 30px 0;
+            background: rgba(22, 33, 62, 0.5);
+            border-radius: 12px;
+            padding: 20px;
         }
-        h1 { color: #333; text-align: center; }
+        h1 { 
+            color: #FF4500; 
+            text-align: center; 
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .metrics {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
         .metric { 
-            display: inline-block; 
-            margin: 10px; 
-            padding: 15px; 
-            background: #FF4500; 
+            background: linear-gradient(135deg, #FF4500 0%, #FF6B35 100%);
             color: white; 
-            border-radius: 8px; 
+            border-radius: 12px; 
+            padding: 20px;
             text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 16px rgba(255, 69, 0, 0.3);
+            transition: transform 0.3s ease;
         }
-        .metric h3 { margin: 0 0 5px 0; font-size: 14px; }
-        .metric p { margin: 0; font-size: 18px; font-weight: bold; }
+        .metric:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(255, 69, 0, 0.4);
+        }
+        .metric h3 { 
+            margin: 0 0 10px 0; 
+            font-size: 14px; 
+            opacity: 0.9;
+        }
+        .metric p { 
+            margin: 0; 
+            font-size: 24px; 
+            font-weight: bold; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 ${title}</h1>
+        <h1>🚀 RocketHub ${title}</h1>
         <div class="metrics">
             ${metrics}
         </div>
@@ -203,10 +311,35 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
                 plugins: {
                     legend: {
                         position: 'top',
+                        labels: {
+                            color: '#e2e8f0'
+                        }
                     },
                     title: {
                         display: true,
-                        text: '${title}'
+                        text: '${title}',
+                        color: '#FF4500',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#94a3b8'
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        }
                     }
                 }
             }
@@ -219,7 +352,23 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
       return htmlContent;
   };
 
+  const generateVisualization = async (content: string, type: 'quick' | 'detailed') => {
+    try {
+      // Try Gemini first
+      return await generateVisualizationWithGemini(content, type);
+    } catch (error) {
+      console.log('⚠️ Gemini failed, falling back to mock visualization:', error);
+      // Fall back to mock visualization
+      return generateMockVisualization(content, type);
+    }
+  };
+
   useEffect(() => {
+    if (hasInitialized.current) {
+      console.log('🔄 Already initialized, skipping...');
+      return;
+    }
+
     const loadVisualization = async () => {
       console.log('🔄 Starting visualization load...');
       
@@ -235,6 +384,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         console.log('✅ Using cached visualization');
         setVisualizationHtml(cachedVisualization);
         setIsLoading(false);
+        hasInitialized.current = true;
         return;
       }
 
@@ -255,9 +405,11 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         }
         
         console.log('✅ Visualization set successfully, clearing loading state');
+        hasInitialized.current = true;
       } catch (err) {
         console.error('Visualization generation error:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
+        hasInitialized.current = true;
       } finally {
         console.log('🔄 Setting loading to false');
         setIsLoading(false);
@@ -272,6 +424,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
   };
 
   const handleRetry = () => {
+    hasInitialized.current = false;
     setError(null);
     setVisualizationHtml('');
     setIsLoading(true);
@@ -285,9 +438,11 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         if (cacheVisualization && messageId) {
           cacheVisualization(messageId, html);
         }
+        hasInitialized.current = true;
       } catch (err) {
         console.error('Retry error:', err);
         setError(err instanceof Error ? err.message : 'Failed to generate visualization');
+        hasInitialized.current = true;
       } finally {
         setIsLoading(false);
       }
@@ -337,7 +492,7 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
               <Loader2 className="w-12 h-12 text-[#FF4500] animate-spin mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Generating Visualization</h2>
               <p className="text-gray-400 text-center max-w-md">
-                Using AI to analyze your data and create interactive charts...
+                Using Gemini 2.5 Flash to analyze your data and create interactive charts...
               </p>
             </div>
           ) : error ? (
