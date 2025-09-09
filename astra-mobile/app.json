@@ -1,0 +1,29 @@
+@@ .. @@
+     "name": "astra-mobile",
+-    "slug": "astra-mobile",
++    "slug": "astra-ai-mobile",
+     "version": "1.0.0",
+     "orientation": "portrait",
+     "icon": "./assets/icon.png",
+@@ .. @@
+     "splash": {
+       "image": "./assets/splash.png",
+       "resizeMode": "contain",
+-      "backgroundColor": "#ffffff"
++      "backgroundColor": "#1e293b"
+     },
+     "assetBundlePatterns": [
+       "**/*"
+@@ .. @@
+     "ios": {
+       "supportsTablet": true
+     },
++    "android": {
++      "adaptiveIcon": {
++        "foregroundImage": "./assets/adaptive-icon.png",
++        "backgroundColor": "#1e293b"
++      }
++    },
+     "web": {
+       "favicon": "./assets/favicon.png"
+     }
