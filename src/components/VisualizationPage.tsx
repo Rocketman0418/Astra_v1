@@ -127,64 +127,27 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
         }]`;
       metrics = `
         <div class="metric">
-          label: 'Performance Score',
-          data: [85, 92, 78, 96],
-          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
-          borderColor: '#FF4500',
-          borderWidth: 2
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Best Performer</h3>
-          <p>Product D</p>
+          <h3>Total Items</h3>
+          <p>100</p>
         </div>
         <div class="metric">
-          <h3>Average Score</h3>
-          <p>87.8</p>
+          <h3>Categories</h3>
+          <p>4</p>
         </div>
         <div class="metric">
-          <h3>Improvement</h3>
-          <p>+12%</p>
+          <h3>Top Category</h3>
+          <p>Category A</p>
         </div>`;
-    } else if (hasGrowth) {
-      chartType = 'line';
-      title = 'Growth Trend Analysis';
-      chartData = `
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Growth %',
-          data: [5, 12, 18, 25, 32, 45],
-          borderColor: '#FF4500',
-          backgroundColor: 'rgba(255, 69, 0, 0.2)',
-          borderWidth: 3,
-          fill: true
-        }]`;
-      metrics = `
-        <div class="metric">
-          <h3>Peak Growth</h3>
-          <p>45%</p>
-        </div>
-        <div class="metric">
-          <h3>Avg Growth</h3>
-          <p>22.8%</p>
-        </div>
-        <div class="metric">
-          <h3>Trend</h3>
-          <p>Upward</p>
-        </div>`;
-    } else {
-      // Default dashboard
-      chartType = 'doughnut';
-      title = 'Data Overview';
-      chartData = `
-        labels: ['Category A', 'Category B', 'Category C', 'Category D'],
-        datasets: [{
-          data: [35, 25, 20, 20],
-          backgroundColor: ['#FF4500', '#FF6B35', '#FF8C42', '#FFAD5A'],
-          borderWidth: 2
-        }]`;
-      metrics = `
-        <div class="metric">
+    }
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
         body { 
             font-family: Arial, sans-serif; 
             margin: 20px; 
@@ -213,33 +176,47 @@ const VisualizationPage: React.FC<VisualizationPageProps> = ({ cacheVisualizatio
             border-radius: 8px; 
             text-align: center;
         }
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualization</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .metric h3 { margin: 0 0 5px 0; font-size: 14px; }
+        .metric p { margin: 0; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 RocketHub Data Analysis</h1>
-        ${htmlContent}
+        <h1>📊 ${title}</h1>
+        <div class="metrics">
+            ${metrics}
+        </div>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
     </div>
+    <script>
+        const ctx = document.getElementById('chart').getContext('2d');
+        new Chart(ctx, {
+            type: '${chartType}',
+            data: {
+                ${chartData}
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '${title}'
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>`;
-      }
       
       console.log('Generated HTML length:', htmlContent.length);
       return htmlContent;
-      
-    } catch (error) {
-      console.error('Gemini API call failed:', error);
-      throw error;
-    }
   };
 
   useEffect(() => {
